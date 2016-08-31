@@ -1,33 +1,22 @@
 'use strict';
 
 
-let config = require('./config'),
-    chat = require('./helpers/chat'),
-    net = require('net'),
-    options = {
-        port: config.port,
-        host: config.host
-    },
-    socket = new net.Socket({
-        allowHalfOpen: true
-    });
+let chat = require('./helpers/chat'),
+    WebSocket = require('ws'),
+    socket = new WebSocket('ws://localhost:9100'),
+    message = '';
 
 process.stdin.setEncoding('utf8');
 process.stdout.setEncoding('utf8');
-socket.connect(options, () => {
-    console.log('Connected to server.');
-
-    let message = '';
-    process.stdin.on('data', input => {
-        if (input.trim()) {
-            message += input;
-            socket.write(chat.pack('general', message));
-            message = '';
-        }
-    });
+process.stdin.on('data', input => {
+    if (input.trim()) {
+        message += input;
+        socket.send(chat.pack('general', message));
+        message = '';
+    }
 });
 
-socket.on('data', message => {
+socket.on('message', message => {
     process.stdout.write(chat.unpack(message));
 });
 

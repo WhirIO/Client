@@ -1,16 +1,19 @@
 'use strict';
 
 
-let Whir = require('./helpers/chat'),
+let config = require('./config'),
+    Whir = require('./core/whir'),
     whir = new Whir({
-        host: 'localhost',
-        port: 9100
+        host: config.host,
+        port: config.port
     });
 
 whir.on('sent', message => {
-    message;
+    // Nicely render the message
+    process.stdout.write(message);
 });
 
 whir.on('message', message => {
+    // Nicely render the message
     process.stdout.write(message);
 });

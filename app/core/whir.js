@@ -2,6 +2,8 @@
 
 
 let EventEmitter = require('events').EventEmitter,
+    message = require('./helpers/message'),
+    parse = require('./helpers/parse'),
     WebSocket = require('ws');
 
 class Whir extends EventEmitter {
@@ -16,42 +18,26 @@ class Whir extends EventEmitter {
         options = options || {};
         this.host = options.host;
         this.port = options.port;
-        this.channel = 'general';
 
-        this.socket = new WebSocket(`ws://${this.host}:${this.port}`);
+        this.socket = new WebSocket(`ws://${this.host}:${this.port}/?${parse.args().string}`);
         this.socket
-            .on('message', message => this.emit('message', this.unpack(message)))
+            .on('open', () => {
+                // Do something, if needed.
+            })
+            .on('message', data => {
+                data = message.unpack(data);
+                console.log(data);
+                this.channel = data.channel;
+                this.emit('received', data.message);
+            })
             .on('end', () => this.emit('offline', 'You are disconnected.'));
     }
 
-    pack (sender, message) {
+    sendMessage (sender, text) {
 
-        message = message.trim();
-
-        let channelLength = Buffer.byteLength(this.channel),
-            messageLength = Buffer.byteLength(message),
-            buffer = new Buffer(channelLength + messageLength + 1);
-
-        buffer.writeUInt8(channelLength, 0);
-        buffer.write(this.channel, 1, channelLength);
-        buffer.write(message, channelLength + 1, messageLength);
-
-        return buffer;
-    }
-
-    unpack (buffer) {
-
-        let channelLength = buffer.readUInt8(0),
-            message = buffer.toString('utf8', channelLength + 1);
-
-        return message;
-    }
-
-    sendMessage (sender, message) {
-
-        message = this.pack(sender, message);
-        this.socket.send(message, { binary: true, mask: true });
-        this.emit('sent', message);
+        text = message.pack(sender, this.channel, text);
+        this.socket.send(text, { binary: true, mask: true });
+        this.emit('sent', text);
     }
 
     eventHandler (input) {

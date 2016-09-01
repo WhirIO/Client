@@ -8,12 +8,11 @@ let config = require('./config'),
         port: config.port
     });
 
-whir.on('sent', message => {
-    // Nicely render the message
-    process.stdout.write(message);
-});
-
-whir.on('message', message => {
-    // Nicely render the message
-    process.stdout.write(message);
-});
+whir.on('sent', text => {
+        // Nicely render the message
+        process.stdout.write(text);
+    })
+    .on('received', text => {
+        // Nicely render the message
+        process.stdout.write(text);
+    });

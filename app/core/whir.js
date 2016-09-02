@@ -2,7 +2,7 @@
 
 
 let EventEmitter = require('events').EventEmitter,
-    message = require('./helpers/message'),
+    messageHelper = require('./helpers/message'),
     parse = require('./helpers/parse'),
     WebSocket = require('ws');
 
@@ -25,26 +25,31 @@ class Whir extends EventEmitter {
                 // Do something, if needed.
             })
             .on('message', data => {
-                data = message.unpack(data);
-                console.log(data);
-                this.channel = data.channel;
-                this.emit('received', data.message);
+                data = messageHelper.unpack(data);
+                this.channel = this.channel || data.channel;
+                this.username = this.username || data.username;
+                this.emit('message', data.message);
             })
-            .on('end', () => this.emit('offline', 'You are disconnected.'));
+            .on('close', (code, data) => {
+                this.emit('close', data);
+            });
     }
 
-    sendMessage (sender, text) {
+    sendMessage (sender, message) {
 
-        text = message.pack(sender, this.channel, text);
-        this.socket.send(text, { binary: true, mask: true });
-        this.emit('sent', text);
+        this.socket.send(messageHelper.pack({
+            sender: sender,
+            channel: this.channel,
+            message: message
+        }), { binary: true, mask: true });
+        this.emit('sent', message);
     }
 
     eventHandler (input) {
 
         input = input.trim();
         if (input) {
-            this.sendMessage.bind(this, 'stefan')(input);
+            this.sendMessage(this.username, input);
         }
     }
 }

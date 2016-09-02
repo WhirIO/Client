@@ -3,36 +3,42 @@
 
 module.exports = {
 
-    pack: (sender, channel, message) => {
+    pack: data => {
 
-        message = message.trim();
+        data.message = data.message.trim();
+        data.status = data.status || 200;
+        data.username = data.sender;
 
-        let cL = Buffer.byteLength(channel),
-            sL = Buffer.byteLength(sender),
-            mL = Buffer.byteLength(message),
-            buffer = new Buffer(cL + sL + mL + 2);
+        let cL = Buffer.byteLength(data.channel),
+            sL = Buffer.byteLength(data.sender),
+            uL = Buffer.byteLength(data.username),
+            mL = Buffer.byteLength(data.message),
+            buffer = new Buffer(cL + sL + uL + mL + 6);
 
-        buffer.writeUInt8(cL, 0);
-        buffer.write(channel, 1);
-        buffer.writeUInt8(sL, cL + 1);
-        buffer.write(sender, cL + 2, sL);
-        buffer.write(message, cL + sL + 2);
+        buffer.writeUInt16BE(data.status, 0);
+        buffer.writeUInt8(cL, 2);
+        buffer.writeUInt8(uL, 3);
+        buffer.writeUInt8(sL, 4);
+        buffer.write(data.channel, 5, cL);
+        buffer.write(data.username, cL + 6, uL);
+        buffer.write(data.sender, cL + uL + 6, sL);
+        buffer.write(data.message, cL + uL + sL + 6);
 
         return buffer;
     },
 
     unpack: buffer => {
 
-        let cL = buffer.readUInt8(0),
-            channel = buffer.toString('utf8', 1, cL + 1),
-            sL = buffer.readUInt8(cL + 1),
-            sender = buffer.toString('utf8', cL + 2, cL + sL + 2),
-            message = buffer.toString('utf8', cL + sL + 2);
+        let cL = buffer.readUInt8(2),
+            uL = buffer.readUInt8(3),
+            sL = buffer.readUInt8(4);
 
         return {
-            sender: sender,
-            channel: channel,
-            message: message
+            status: buffer.readUInt16BE(0),
+            channel: buffer.toString('utf8', 5, cL + 5),
+            username: buffer.toString('utf8', cL + 6, cL + uL + 6) || null,
+            sender: buffer.toString('utf8', cL + uL + 6, sL + cL + uL + 6),
+            message: buffer.toString('utf8', cL + uL + sL + 6)
         };
     }
 };

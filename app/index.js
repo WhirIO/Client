@@ -10,9 +10,14 @@ let config = require('./config'),
 
 whir.on('sent', text => {
         // Nicely render the message
-        process.stdout.write(text);
+        console.log(text);
     })
-    .on('received', text => {
+    .on('message', text => {
         // Nicely render the message
-        process.stdout.write(text);
+        console.log(text);
+    })
+    .on('close', text => {
+        // Nicely render the message
+        console.log(text);
+        process.exit(1);
     });

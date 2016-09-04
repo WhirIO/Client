@@ -20,4 +20,8 @@ whir.on('sent', text => {
         // Nicely render the message
         console.log(text);
         process.exit(1);
-    });
+    })
+    .on('error', text => {
+        console.error(text);
+        process.exit(1);
+    });;

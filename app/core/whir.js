@@ -2,8 +2,8 @@
 
 
 let EventEmitter = require('events').EventEmitter,
-    messageHelper = require('./helpers/message'),
-    parse = require('./helpers/parse'),
+    messageHelper = require('./../library/message'),
+    parse = require('./../library/parse'),
     WebSocket = require('ws');
 
 class Whir extends EventEmitter {
@@ -19,20 +19,25 @@ class Whir extends EventEmitter {
         this.host = options.host;
         this.port = options.port;
 
-        this.socket = new WebSocket(`ws://${this.host}:${this.port}/?${parse.args().string}`);
-        this.socket
-            .on('open', () => {
-                // Do something, if needed.
+        parse.input()
+            .then(result => {
+
+                this.socket = new WebSocket(`ws://${this.host}:${this.port}`, { headers: result.headers });
+                this.socket
+                    .on('open', () => {
+                        // Do something, if needed.
+                    })
+                    .on('message', data => {
+                        data = messageHelper.unpack(data);
+                        this.channel = this.channel || data.channel;
+                        this.username = this.username || data.username;
+                        this.emit('message', data.message);
+                    })
+                    .on('close', (code, data) => {
+                        this.emit('close', data);
+                    });
             })
-            .on('message', data => {
-                data = messageHelper.unpack(data);
-                this.channel = this.channel || data.channel;
-                this.username = this.username || data.username;
-                this.emit('message', data.message);
-            })
-            .on('close', (code, data) => {
-                this.emit('close', data);
-            });
+            .catch(error => this.emit('error', error));
     }
 
     sendMessage (sender, message) {

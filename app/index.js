@@ -4,8 +4,7 @@
 let render = require('./library/render'),
     Whir = require('./core/whir'),
     whir = new Whir({
-        host: 'localhost',
-        port: '9100'
+        host: 'chat.whir.io'
     });
 
 whir.on('sent', text => render('left', text))

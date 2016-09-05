@@ -1,18 +1,28 @@
 {
-  "name": "Whir.io",
-  "version": "0.1.0",
+  "name": "whir.io",
+  "version": "0.1.1",
   "description": "The whir.io chat client.",
-  "keywords": [],
   "author": {
     "name": "Stefan Aichholzer",
     "email": "theaichholzer@gmail.com",
     "url": "https://github.com/aichholzer"
   },
+  "contributors": [],
+  "maintainers": [],
+  "keywords": [
+    "chat",
+    "terminal",
+    "command",
+    "interface",
+    "cli",
+    "messenger"
+  ],
   "homepage": "https://github.com/WhirIO",
   "repository": {
     "type": "git",
     "url": "https://github.com/WhirIO/Client"
   },
+  "license": "MIT",
   "engines": {
     "node": "6.2.x"
   },
@@ -30,6 +40,23 @@
     "grunt-jscs": "^3.0.1",
     "grunt-nodemon": "^0.4.2",
     "jscs": "^3.0.7",
-    "jshint": "^2.9.3"
+    "jshint": "^2.9.3",
+    "mocha": "^3.0.2",
+    "should": "^11.1.0"
+  },
+  "main": "./app/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha -R spec -t 5000"
+  },
+  "bugs": {
+    "url": "https://github.com/WhirIO/Client/issues"
+  },
+  "_from": "whir.io@^0.1.0",
+  "_npmUser": {
+    "name": "aichholzer",
+    "email": "theaichholzer@gmail.com"
   }
 }

@@ -22,7 +22,8 @@ class Whir extends EventEmitter {
         parse.input()
             .then(result => {
 
-                this.socket = new WebSocket(`ws://${this.host}:${this.port}`, { headers: result.headers });
+                let url = this.host + (this.port ? `:${this.port}` : '');
+                this.socket = new WebSocket(`ws://${url}`, { headers: result.headers });
                 this.socket
                     .on('open', () => {
                         process.stdout.write('\x1Bc');

@@ -43,6 +43,6 @@ module.exports = (float, data, exit) => {
     lastFloat = float;
 
     if (exit) {
-        process.exit(1);
+        process.exit(0);
     }
 };

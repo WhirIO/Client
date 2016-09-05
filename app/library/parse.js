@@ -11,8 +11,8 @@ module.exports = {
             settingsFile = null;
 
         process.argv.slice(2).map(arg => {
-            if (arg.indexOf(':') >= 0) {
-                arg = arg.split(':');
+            if (arg.indexOf('=') >= 0) {
+                arg = arg.split('=');
                 switch (arg[0]) {
                     case 'u': case 'username':
                         headers['x-whir-username'] = arg[1];

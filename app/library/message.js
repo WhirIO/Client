@@ -40,5 +40,27 @@ module.exports = {
             sender: buffer.toString('utf8', cL + uL + 6, sL + cL + uL + 6),
             message: buffer.toString('utf8', cL + uL + sL + 6)
         };
+    },
+
+    split: message => {
+
+        let newMessage = '',
+            currentWord = 0,
+            words = message.split(' '),
+            lastLength = false,
+            terminalWidth = process.stdout.columns - 20;
+
+        do {
+            if (lastLength > terminalWidth) {
+                newMessage += '\n';
+                lastLength = 0;
+            }
+
+            newMessage += words[currentWord] + ' ';
+            lastLength += (words[currentWord] + ' ').length;
+            currentWord++;
+        } while (newMessage.length < message.length);
+
+        return newMessage;
     }
 };

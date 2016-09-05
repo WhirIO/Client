@@ -35,12 +35,12 @@ module.exports = {
 
         return new Promise((yes, no) => {
 
-            crypto.bytes(64, bytes => {
+            crypto.bytes(128, bytes => {
                 if (!bytes) {
                     return no();
                 }
 
-                headers['x-whir-session-id'] = crypto.hash(bytes, 'RSA-SHA1');
+                headers['x-whir-session-id'] = crypto.hash(bytes, 'RSA-SHA256');
                 yes({
                     headers: headers,
                     settingsFile: settingsFile

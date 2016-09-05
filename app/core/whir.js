@@ -25,16 +25,16 @@ class Whir extends EventEmitter {
                 this.socket = new WebSocket(`ws://${this.host}:${this.port}`, { headers: result.headers });
                 this.socket
                     .on('open', () => {
-                        // Do something, if needed.
+                        process.stdout.write('\x1Bc');
                     })
                     .on('message', data => {
                         data = messageHelper.unpack(data);
                         this.channel = this.channel || data.channel;
                         this.username = this.username || data.username;
-                        this.emit('message', data.message);
+                        this.emit('message', data);
                     })
                     .on('close', (code, data) => {
-                        this.emit('close', data);
+                        this.emit('close', { sender: '@whir', message: data });
                     });
             })
             .catch(error => this.emit('error', error));
@@ -42,12 +42,15 @@ class Whir extends EventEmitter {
 
     sendMessage (sender, message) {
 
-        this.socket.send(messageHelper.pack({
+        let data = {
             sender: sender,
             channel: this.channel,
             message: message
-        }), { binary: true, mask: true });
-        this.emit('sent', message);
+        };
+
+        this.socket.send(messageHelper.pack(data), { binary: true, mask: true });
+        data.sender = 'Me';
+        this.emit('sent', data);
     }
 
     eventHandler (input) {

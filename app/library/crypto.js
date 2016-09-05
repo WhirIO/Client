@@ -1,8 +1,7 @@
 'use strict';
 
 
-let crypto = require('crypto'),
-    config = require('../config');
+let crypto = require('crypto');
 
 module.exports = {
 

@@ -4,7 +4,7 @@
   "description": "The whir.io chat client.",
   "author": {
     "name": "Stefan Aichholzer",
-    "email": "theaichholzer@gmail.com",
+    "email": "play@analogbird.com",
     "url": "https://github.com/aichholzer"
   },
   "contributors": [],
@@ -27,9 +27,10 @@
     "node": "6.2.x"
   },
   "dependencies": {
-    "boxen": "^0.8.1",
     "bufferutil": "^1.2.1",
     "chalk": "^1.1.3",
+    "co": "^4.6.0",
+    "minimist": "^1.2.0",
     "utf-8-validate": "^1.2.1",
     "ws": "^1.1.1"
   },

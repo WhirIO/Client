@@ -1,65 +1,55 @@
 'use strict';
 
 
-let EventEmitter = require('events').EventEmitter,
-    messageHelper = require('./../library/message'),
-    parse = require('./../library/parse'),
-    WebSocket = require('ws');
+const WS = require('ws');
+const EventEmitter = require('events').EventEmitter;
+const helper = _require('library/whir');
 
 class Whir extends EventEmitter {
 
-    constructor (options) {
-        super();
+    constructor (args = {}) {
+        const host = args.host || 'chat.whir.io';
+        if (!args.user) {
+            throw new Error('I need, at least, a username to connect with.');
+        }
 
+        super();
         process.stdin.setEncoding('utf8');
         process.stdout.setEncoding('utf8');
-        process.stdin.on('data', data => this.eventHandler(data));
+        process.stdin.on('data', input => {
+            input = input.trim();
+            if (input) {
+                this.send(input);
+            }
+        });
 
-        options = options || {};
-        this.host = options.host;
-        this.port = options.port;
+        helper.getHeaders(args)
+            .then(headers => {
 
-        parse.input()
-            .then(result => {
-
-                let url = this.host + (this.port ? `:${this.port}` : '');
-                this.socket = new WebSocket(`ws://${url}`, { headers: result.headers });
+                this.user = args.user;
+                this.socket = new WS(`ws://${host}`, headers);
                 this.socket
-                    .on('open', () => {
-                        process.stdout.write('\x1Bc');
-                    })
+                    .on('open', () => process.stdout.write('\x1Bc'))
                     .on('message', data => {
-                        data = messageHelper.unpack(data);
-                        this.channel = this.channel || data.channel;
-                        this.username = this.username || data.username;
-                        this.emit('message', data);
+                        data = JSON.parse(data.toString('utf8'));
+                        this.channel = data.channel || args.channel;
+                        this.emit('received', data);
                     })
-                    .on('close', (code, data) => {
-                        this.emit('close', { sender: '@whir', message: data });
-                    });
-            })
-            .catch(error => this.emit('error', error));
+                    .on('close', (code, data) => this.emit('close', { user: '@whir', message: data }));
+            });
     }
 
-    sendMessage (sender, message) {
+    send (message) {
 
-        let data = {
-            sender: sender,
+        const data = {
+            user: this.user,
             channel: this.channel,
             message: message
         };
 
-        this.socket.send(messageHelper.pack(data), { binary: true, mask: true });
-        data.sender = 'Me';
+        this.socket.send(JSON.stringify(data), { binary: true, mask: true });
+        data.user = 'Me';
         this.emit('sent', data);
-    }
-
-    eventHandler (input) {
-
-        input = input.trim();
-        if (input) {
-            this.sendMessage(this.username, input);
-        }
     }
 }
 

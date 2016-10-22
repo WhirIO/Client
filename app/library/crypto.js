@@ -1,45 +1,30 @@
 'use strict';
 
 
-let crypto = require('crypto');
+const crypto = require('crypto');
 
 module.exports = {
 
-    bytes: (length, encoding, callback) => {
-
-        encoding = encoding || 'hex';
-        if (typeof encoding === 'function') {
-            callback = encoding;
-            encoding = 'hex';
-        }
-
+    bytes: (length, encoding = 'hex') => new Promise((yes, no) => {
         crypto.randomBytes(length, (error, bytes) => {
-            if (error) {
-                return callback(null);
+            if (error || !bytes) {
+                return no(null);
             }
 
-            callback(bytes.toString(encoding));
+            yes(bytes.toString(encoding));
         });
-    },
+    }),
 
-    hmac: (data, algorithm, encoding, key) => {
+    hmac: (data, algorithm = 'RSA-SHA512', encoding = 'hex', key) => crypto
+        .createHmac(algorithm, key)
+        .update(data)
+        .digest(encoding),
 
-        algorithm = algorithm || 'RSA-SHA512';
-        encoding = encoding || 'hex';
-
-        return crypto.createHmac(algorithm, key).update(data).digest(encoding);
-    },
-
-    hash: (data, algorithm, encoding) => {
-
+    hash: (data, algorithm = 'RSA-SHA512', encoding = 'hex') => {
         if (typeof data !== 'string') {
             data = JSON.stringify(data);
         }
 
-        algorithm = algorithm || 'RSA-SHA512';
-        encoding = encoding || 'hex';
-
         return crypto.createHash(algorithm).update(data, 'utf8').digest(encoding);
     }
-
 };

@@ -21,6 +21,7 @@ class Whir extends EventEmitter {
             input = input.trim();
             if (!input) {
                 process.stdout.write('\u001b[1A');
+                process.stdout.write('\u001b[2C');
                 return;
             }
 

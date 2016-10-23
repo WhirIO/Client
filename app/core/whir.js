@@ -8,6 +8,7 @@ const helper = _require('library/whir');
 class Whir extends EventEmitter {
 
     constructor (args = {}) {
+
         const host = args.host || 'chat.whir.io';
         if (!args.user) {
             throw new Error('I need, at least, a username to connect with.');

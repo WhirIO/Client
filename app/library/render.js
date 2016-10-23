@@ -6,17 +6,11 @@ const background = ['bgBlack', 'bgRed', 'bgGreen', 'bgYellow', 'bgBlue', 'bgMage
 const senders = {};
 let lastSender = '';
 
-module.exports = (data, exit) => {
+module.exports = (data, sender, exit) => {
 
-    data.message = data.message.replace(/_(@?\w+)_/gi, chalk.yellow.bold('$1'));
-    data.message = data.message.replace(/(@\w+)/gi, chalk.yellow.underline.bold('$1'));
+    data.message = data.message.replace(/_(\w+)_/gi, chalk.yellow.bold('$1'));
 
-    if (data.user === 'Me') {
-        process.stdout.write('\u001b[2A');
-    } else {
-        process.stdout.write('\u001b[1A');
-    }
-
+    process.stdout.write(`\u001b[${sender==='me'?2:1}A`);
     process.stdout.write('\u001b[1M');
 
     if (!senders[data.user]) {
@@ -27,13 +21,13 @@ module.exports = (data, exit) => {
         console.log();
     }
 
-    const block = chalk[senders[data.user]].bold(' ');
-    console.log(block, chalk.yellow.bold(`${data.user}:`), data.message);
+    process.stdout.write('\u001b[2D');
+    console.log(chalk[senders[data.user]].bold(' '), chalk.yellow.bold(`${data.user}:`), data.message);
     console.log();
+    process.stdout.write('\u001b[2C');
 
     lastSender = data.user;
-
     if (exit) {
-        process.exit(0);
+        process.exit(1);
     }
 };

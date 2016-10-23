@@ -19,9 +19,12 @@ class Whir extends EventEmitter {
         process.stdout.setEncoding('utf8');
         process.stdin.on('data', input => {
             input = input.trim();
-            if (input) {
-                this.send(input);
+            if (!input) {
+                process.stdout.write('\u001b[1A');
+                return;
             }
+
+            this.send(input);
         });
 
         helper.getHeaders(args)
@@ -36,7 +39,7 @@ class Whir extends EventEmitter {
                         this.channel = data.channel || args.channel;
                         this.emit('received', data);
                     })
-                    .on('close', (code, data) => this.emit('close', { user: '@whir', message: data }));
+                    .on('close', (code, data) => this.emit('close', { user: 'whir', message: data }));
             });
     }
 
@@ -49,7 +52,6 @@ class Whir extends EventEmitter {
         };
 
         this.socket.send(JSON.stringify(data), { binary: true, mask: true });
-        data.user = 'Me';
         this.emit('sent', data);
     }
 }

@@ -9,10 +9,10 @@ const Whir = _require('core/whir');
 
 try {
     const whir = new Whir(args);
-    whir.on('sent', text => render(text))
+    whir.on('sent', text => render(text, 'me'))
         .on('received', text => render(text))
-        .on('close', text => render(text, true))
-        .on('error', text => render(text, true));
+        .on('close', text => render(text, 'whir', true))
+        .on('error', text => render(text, 'whir', true));
 
 } catch (error) {
     console.error('\n' + error.message);

@@ -31,6 +31,11 @@ module.exports = (data, sender, exit) => {
 
     process.stdout.write('\u001b[2D');
     console.log(chalk[data.color || 'white']('\u258B'), chalk.green(`${data.user}:`), data.message);
+    if (data.payload) {
+        for (let item in data.payload) {
+            console.log('  \u25CF', chalk.green(`/${item}:`), data.payload[item]);
+        }
+    }
     console.log(line());
     process.stdout.write('\u001b[2C');
 

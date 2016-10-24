@@ -25,6 +25,11 @@ class Whir extends EventEmitter {
                 return;
             }
 
+            if (input === '/exit') {
+                console.log();
+                process.exit(0);
+            }
+
             this.send(input);
         });
 

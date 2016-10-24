@@ -4,8 +4,8 @@
 
 
 ```
-Note: This module is still under development, I am working on it.
-It will -most likely- be unstable until I remove this notice.
+This is still under development.
+It might be unstable until this notice removed.
 ```
 
 ### Getting started:

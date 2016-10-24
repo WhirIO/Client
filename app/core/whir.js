@@ -32,12 +32,14 @@ class Whir extends EventEmitter {
             .then(headers => {
 
                 this.user = args.user;
+                this.mute = args.mute || false;
                 this.socket = new WS(`ws://${host}`, headers);
                 this.socket
                     .on('open', () => process.stdout.write('\x1Bc'))
                     .on('message', data => {
                         data = JSON.parse(data.toString('utf8'));
                         this.channel = data.channel || args.channel;
+                        data.mute = this.mute;
                         this.emit('received', data);
                     })
                     .on('close', (code, data) => this.emit('close', { user: 'whir', message: data }));

@@ -2,8 +2,6 @@
 
 
 const chalk = require('chalk');
-const background = ['bgBlack', 'bgRed', 'bgGreen', 'bgYellow', 'bgBlue', 'bgMagenta', 'bgCyan', 'bgWhite'];
-const senders = {};
 const line = () => {
     const screenWidth = process.stdout.columns;
     let box = '';
@@ -19,19 +17,20 @@ module.exports = (data, sender, exit) => {
 
     data.message = data.message.replace(/_(\w+)_/gi, chalk.green.underline('$1'));
 
-    process.stdout.write(`\u001b[${sender==='me'?2:1}A`);
-    process.stdout.write('\u001b[1M');
-
-    if (!senders[data.user]) {
-        senders[data.user] = background[Math.floor((Math.random() * background.length) + 0)];
+    const lines = sender === 'me' ? 2 : 1;
+    process.stdout.write(`\u001b[${lines}A`);
+    if (sender !== 'me' && !data.mute) {
+        process.stdout.write('\u0007');
     }
+
+    process.stdout.write('\u001b[1M');
     if (lastSender !== data.user) {
         process.stdout.write('\u001b[1M');
         console.log();
     }
 
     process.stdout.write('\u001b[2D');
-    console.log(chalk[senders[data.user]](' '), chalk.green(`${data.user}:`), data.message);
+    console.log(chalk[data.color || 'white']('\u258B'), chalk.green(`${data.user}:`), data.message);
     console.log(line());
     process.stdout.write('\u001b[2C');
 

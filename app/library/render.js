@@ -2,6 +2,7 @@
 
 
 const chalk = require('chalk');
+const emoji = _require('library/emoji');
 const line = () => {
     const screenWidth = process.stdout.columns;
     let box = '';
@@ -30,7 +31,7 @@ module.exports = (data, sender, exit) => {
     }
 
     process.stdout.write('\u001b[2D');
-    console.log(chalk[data.color || 'white']('\u258B'), chalk.green(`${data.user}:`), data.message);
+    console.log(chalk[data.color || 'white']('\u258B'), chalk.green(`${data.user}:`), emoji.process(data.message));
     if (data.payload) {
         for (let item in data.payload) {
             console.log('  \u25CF', chalk.green(`/${item}:`), data.payload[item]);

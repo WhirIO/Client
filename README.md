@@ -14,7 +14,6 @@ $> npm install -g whir.io
 $> whir.io --user=stefan [options]
 ```
 
-
 ### Options:
 - `--user`: Your username for a particular channel.
 - `--channel`: The channel to join. Default: `whir generated name`
@@ -28,12 +27,12 @@ $> whir.io --user=stefan [options]
 - `--mute`: Mute the conversation, no notification alerts on new messages.
 - `--trace`: On errors, print the error stack.
 
-
 ### Example use:
 ```
 $> whir.io --channel=box --user=stefan --mute
 ```
 
+### Settings file:
 If you want store your connection parameters in a file instead of passing them as arguments:
 
 ```

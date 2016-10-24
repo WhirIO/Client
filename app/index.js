@@ -13,8 +13,8 @@ try {
 
     whir.on('sent', data => screen.echo(data, 'me'))
         .on('received', data => screen.echo(data))
-        .on('close', data => screen.echo(data).end())
-        .on('error', data => screen.echo(data).end());
+        .on('close', data => screen.error(data))
+        .on('error', data => screen.error(data));
 
 } catch (error) {
     console.error('\n' + error.message);

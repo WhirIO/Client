@@ -21,58 +21,47 @@ class Screen {
             this.render();
         });
 
-        screen.key(['escape', 'C-c'], () => {
+        this.screen.key(['escape', 'C-c'], () => {
             return process.exit(0);
         });
 
-        this.screen.append(this.menu());
+        this.screen.append(this.title());
         this.screen.append(this.users());
         this.screen.append(this.timeline());
         this.screen.append(this.input());
         this.render();
     }
 
-    menu () {
+    title () {
 
-        const menu = blessed.listbar({
-            autoCommandKeys: false,
-            keys: true,
-            top: '0%',
-            left: '0%',
+        this.title = blessed.text({
+            screen: this.screen,
+            top: 0,
             width: '100%',
+            height: 4,
+            padding: {
+                top: 1,
+                right: 1,
+                bottom: 1,
+                left: 1
+            },
             style: {
-                bg: 'black',
-                item: {
-                    bg: 'green',
-                    fg: 'black'
-                },
-                selected: {
-                    bg: 'green',
-                    fg: 'black'
-                }
+                bg: 'green',
+                fg: 'black',
             }
         });
 
-        menu.addItem({
-            text: 'Exit',
-            keys: ['q', 'C-c'],
-            callback: () => {
-                this.screen.destroy();
-                process.exit(0);
-            }
-        });
-
-        return menu;
+        this.title.setText('Whir.io');
+        return this.title;
     }
 
     users () {
 
         this.users = blessed.list({
             screen: this.screen,
-            top: 1,
             width: '25%',
+            top: 3,
             keys: true,
-            vi: true,
             border: 'line',
             style: {
                 border: {
@@ -92,15 +81,21 @@ class Screen {
 
         this.timeline = blessed.box({
             screen: this.screen,
-            top: 1,
             keys: true,
+            top: 3,
             left: '25%-1',
-            height: '100%-3',
+            height: '100%-7',
             border: 'line',
             scrollable: true,
             alwaysScroll: true,
             scrollbar: true,
             fullUnicode: true,
+            padding: {
+                top: 1,
+                right: 0,
+                bottom: 1,
+                left: 2
+            },
             style: {
                 border: {
                     fg: 'white'
@@ -112,15 +107,6 @@ class Screen {
             }
         });
 
-        this.timeline.on('wheeldown', (offset) => {
-            //this.timeline.childOffset = 5;
-            //this.screen.render();
-        });
-        this.timeline.on('wheelup', () => {
-            //this.timeline.childOffset = -5;
-            //this.screen.render();
-        });
-
         return this.timeline;
     }
 
@@ -130,6 +116,12 @@ class Screen {
             content: '',
             screen: this.screen,
             border: 'line',
+            padding: {
+                top: 1,
+                right: 2,
+                bottom: 1,
+                left: 2
+            },
             style: {
                 fg: 'default',
                 bg: 'default',
@@ -139,8 +131,8 @@ class Screen {
                 }
             },
             left: '24%',
-            height: 3,
-            top: '100%-3',
+            height: 5,
+            top: '100%-5',
             keys: true,
             mouse: true,
             inputOnFocus: true
@@ -149,15 +141,11 @@ class Screen {
         this.input.on('submit', value => {
             value = value.trim();
             if (!value) {
-                return;
+                return this.render();
             }
 
             this.input.clearValue();
             this.whir.send(value.trim());
-        });
-
-        this.input.on('cancel', () => {
-            this.input.clearValue();
         });
 
         return this.input;
@@ -177,9 +165,44 @@ class Screen {
         let line = chalk.green(`${data.user}:`) + ' ' + emoji.process(data.message).toString('utf-8');
         this.timeline.pushLine(line);
         this.timeline.setScrollPerc(100);
+        this.title.setText(`Channel: ${data.channel} | Connected users: ${data.users}`);
         this.render();
 
         this.lastSender = data.user;
+        return this;
+    }
+
+    error (data) {
+
+        const error = blessed.box({
+            top: 'center',
+            left: 'center',
+            width: '50%',
+            height: '30%',
+            padding: {
+                top: 2,
+                right: 3,
+                bottom: 2,
+                left: 3
+            },
+            align: 'center',
+            valign: 'middle',
+            content: data.message + '\n\nPress `esc` to close the application.',
+            tags: true,
+            border: {
+                type: 'line'
+            },
+            style: {
+                fg: 'default',
+                bg: 'default',
+                border: {
+                    fg: 'white'
+                }
+            }
+        });
+
+        this.screen.append(error);
+        this.render();
     }
 
     render () {

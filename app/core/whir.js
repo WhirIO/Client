@@ -15,6 +15,7 @@ class Whir extends EventEmitter {
         }
 
         super();
+        /*
         process.stdin.setEncoding('utf8');
         process.stdout.setEncoding('utf8');
         process.stdin.on('data', input => {
@@ -32,6 +33,7 @@ class Whir extends EventEmitter {
 
             this.send(input);
         });
+        */
 
         helper.getHeaders(args)
             .then(headers => {
@@ -40,7 +42,7 @@ class Whir extends EventEmitter {
                 this.mute = args.mute || false;
                 this.socket = new WS(`ws://${host}`, headers);
                 this.socket
-                    .on('open', () => process.stdout.write('\x1Bc'))
+                    .on('open', () => {}) // process.stdout.write('\x1Bc')
                     .on('message', data => {
                         data = JSON.parse(data.toString('utf8'));
                         this.channel = data.channel || args.channel;

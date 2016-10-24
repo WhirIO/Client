@@ -27,6 +27,7 @@
     "node": "6.4.x"
   },
   "dependencies": {
+    "blessed": "^0.1.81",
     "bufferutil": "^1.2.1",
     "chalk": "^1.1.3",
     "co": "^4.6.0",

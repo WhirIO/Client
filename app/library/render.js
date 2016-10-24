@@ -14,7 +14,7 @@ const line = () => {
 };
 let lastSender = '';
 
-module.exports = (data, sender, exit) => {
+module.exports = (data, sender = 'whir') => {
 
     data.message = data.message.replace(/_(\w+)_/gi, chalk.green.underline('$1'));
 

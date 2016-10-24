@@ -21,17 +21,34 @@ $> whir.io --user=stefan [options]
 - `--channel`: The channel to join.
 - `--max`: Max. users per channel (Only for new channels). Default: `1000`.
 - `--timeout`: Disconnect after [timeout] seconds. Default: `0` (no timeout).
-- `--file`: Your settings file. This will override other options.
+- `--file`: Read your settings from file. This overrides the other options.
 
-If you want store your settings in a file instead of passing arguments:
+### Additional flags (these do not require values):
+
+- `--mute`: Mute the conversation, no notification alerts on new messages.
+- `--trace`: On errors, print the error stack.
+
+
+### Example use:
+```
+$> whir.io --channel=box --user=stefan --mute
+```
+
+If you want store your connection parameters in a file instead of passing them as arguments:
 
 ```
 {
   "user": "stefan",
-  "channel": "development",
+  "channel": "box",
   "timeout": 10,
   "max": 25
 }
+```
+
+then
+
+```
+$> whir.io --file=[path_to_file]
 ```
 
 ### License

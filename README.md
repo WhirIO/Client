@@ -16,9 +16,9 @@ $> whir.io --user=stefan [options]
 
 
 ### Options:
+- `--user`: Your username for a particular channel.
+- `--channel`: The channel to join. Default: `whir generated name`
 - `--host`: The server running Whir. Default: `chat.whir.io`.
-- `--user`: Your channel username.
-- `--channel`: The channel to join.
 - `--max`: Max. users per channel (Only for new channels). Default: `1000`.
 - `--timeout`: Disconnect after [timeout] seconds. Default: `0` (no timeout).
 - `--file`: Read your settings from file. This overrides the other options.

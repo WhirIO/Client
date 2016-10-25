@@ -3,7 +3,7 @@
 
 const blessed = require('blessed');
 const chalk = require('chalk');
-const emoji = _require('library/emoji');
+const string = _require('library/string');
 
 class Screen {
 
@@ -161,25 +161,41 @@ class Screen {
 
     echo (data, sender = 'whir') {
 
+        /**
+         * Notification sound on incoming messages, when mute = false
+         */
         if (sender !== 'me' && !data.mute) {
             process.stdout.write('\u0007');
         }
 
+        /**
+         * A blank line between messages from different users.
+         * Might be removed if a "floating-boxes" approach is adopted.
+         */
         if (this.lastSender !== data.user) {
             this.timeline.pushLine('');
         }
 
-        this.lastUserCount = data.users || this.lastUserCount;
-
+        /**
+         * Add or remove users from the user panel.
+         * @see this.users()
+         */
         if (data.action) {
-            switch (data.action.method) {
-                case 'join': this.users.addItem(data.action.user);
-                    break;
-                case 'leave': this.users.removeItem(data.action.user);
-                    break;
+            let method = data.action.method === 'join' ? 'addItem' :
+                data.action.method === 'leave' ? 'removeItem' :
+                null;
+
+            if (method) {
+                this.users[method](data.action.user);
             }
         }
 
+        /**
+         * When establishing a connection, all users are sent back.
+         * This takes the data sent by the server, merges it with the
+         * existing users, sorts them (alphabetically) and re-populates
+         * the list with the new array of users.
+         */
         if (data.currentUsers) {
             data.currentUsers = data.currentUsers
                 .concat(this.users.children)
@@ -189,15 +205,35 @@ class Screen {
             this.users.setItems(data.currentUsers);
         }
 
+        /**
+         * Replacements; underline, bold, italics, etc.
+         * Find and replace any emoji (as per: http://www.fileformat.info/info/emoji/list.htm)
+         * Format the line to be rendered.
+         * In case an extra payload was sent by the server, render that as well.
+         * Scroll the timeline to the bottom.
+         */
         data.message = data.message.replace(/_(\w+)_/gi, chalk.green.underline('$1'));
-        data.message = emoji.process(data.message);
-        let line = chalk.green(`${data.user}:`) + ' ' + data.message;
-        this.timeline.pushLine(line);
+        data.message = string.emojinize(data.message);
+        if (!data.payload && !data.action) {
+            let line = chalk.green(`${data.user}:`) + ' ' + data.message;
+            this.timeline.pushLine(line);
+        } else if (data.payload) {
+            for (let item in data.payload) {
+                let line = chalk.green(`/${string.pad(item)}`) + data.payload[item];
+                this.timeline.pushLine(line);
+            }
+        }
         this.timeline.setScrollPerc(100);
-        this.title.setText(`Channel: ${data.channel} | User: ${this.whir.user} | Users: ${this.lastUserCount}`);
-        this.render();
 
+        /**
+         * Keep track of the user who send the last message, just for rendering
+         * purposes and update the connected number of users.
+         * @see this.users
+         */
         this.lastSender = data.user;
+        this.title.setText(`Channel: ${data.channel} | User: ${this.whir.user} | Users: ${this.users.children.length + 1}`);
+
+        this.render();
         return this;
     }
 

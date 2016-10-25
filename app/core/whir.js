@@ -38,6 +38,12 @@ class Whir extends EventEmitter {
         };
 
         this.socket.send(JSON.stringify(data), { binary: true, mask: true });
+        if (data.message.match(/^\/[\w]/)) {
+            data.action = {
+                method: 'command'
+            };
+        }
+
         this.emit('sent', data);
     }
 }

@@ -12,19 +12,19 @@ class Screen {
         this.whir = whir;
         this.screen = blessed.screen({
             smartCSR: true,
-            dockBorders: true
+            dockBorders: true,
+            fullUnicode: true
         });
         this.screen.title = 'Whir.io';
 
+        /*
         this.screen.key('tab', () => {
             this.screen.focusNext();
             this.render();
         });
+        */
 
-        this.screen.key(['escape', 'C-c'], () => {
-            this.screen.destroy();
-            return process.exit(0);
-        });
+        this.screen.key(['escape', 'C-c'], this.destroy);
 
         this.screen.append(this.title());
         this.screen.append(this.users());
@@ -97,7 +97,6 @@ class Screen {
             scrollable: true,
             alwaysScroll: true,
             scrollbar: true,
-            fullUnicode: true,
             padding: {
                 top: 1,
                 right: 0,
@@ -146,12 +145,45 @@ class Screen {
             inputOnFocus: true
         });
 
+        const history = (char, key) => {
+
+            const operator = () => {
+                return key.name === 'up' ?
+                    this.whir.conversationIndex < this.whir.conversation.length :
+                    this.whir.conversationIndex > 1;
+            };
+
+            if (this.whir.conversation.length) {
+                let found = false;
+                do {
+                    if (operator()) {
+                        this.whir.conversationIndex = key.name === 'up' ?
+                            this.whir.conversationIndex + 1 :
+                            this.whir.conversationIndex - 1;
+
+                        let data = this.whir.conversation[this.whir.conversation.length - this.whir.conversationIndex];
+                        if (data.user === this.whir.user) {
+                            found = true;
+                            this.input.setValue(data.message);
+                            this.render();
+                        }
+                    } else {
+                        found = true;
+                    }
+                } while (!found);
+            }
+        };
+
+        this.input.key('up', history);
+        this.input.key('down', history);
+
         this.input.on('submit', value => {
             value = value.trim();
             if (!value) {
                 return this.render();
             }
 
+            this.whir.conversationIndex = 0;
             this.input.clearValue();
             this.whir.send(value.trim());
         });
@@ -160,6 +192,10 @@ class Screen {
     }
 
     echo (data, sender = 'whir') {
+
+        if (data.command === 'exit') {
+            return this.destroy();
+        }
 
         /**
          * Notification sound on incoming messages, when mute = false
@@ -172,7 +208,7 @@ class Screen {
          * A blank line between messages from different users.
          * Might be removed if a "floating-boxes" approach is adopted.
          */
-        if (this.lastSender !== data.user) {
+        if (this.lastSender !== data.user && !data.command) {
             this.timeline.pushLine('');
         }
 
@@ -214,7 +250,7 @@ class Screen {
          */
         data.message = data.message.replace(/_(\w+)_/gi, chalk.green.underline('$1'));
         data.message = string.emojinize(data.message);
-        if (!data.payload && !data.action) {
+        if (!data.payload && !data.command) {
             let line = chalk.green(`${data.user}:`) + ' ' + data.message;
             this.timeline.pushLine(line);
         } else if (data.payload) {
@@ -274,6 +310,11 @@ class Screen {
 
         this.input.focus();
         this.screen.render();
+    }
+
+    destroy () {
+        this.screen.destroy();
+        return process.exit(0);
     }
 }
 

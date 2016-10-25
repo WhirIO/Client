@@ -10,19 +10,22 @@ class Whir extends EventEmitter {
     constructor (argv = {}) {
 
         super();
-        const host = argv.host || 'chat.whir.io';
+        this.conversation = [];
+        this.conversationIndex = 0;
+        this.host = argv.host || 'chat.whir.io';
         helper.getHeaders(argv)
             .then(headers => {
 
                 this.user = argv.user;
                 this.mute = argv.mute || false;
-                this.socket = new WS(`ws://${host}`, headers);
+                this.socket = new WS(`ws://${this.host}`, headers);
                 this.socket
                     .on('open', () => {})
                     .on('message', data => {
                         data = JSON.parse(data.toString('utf8'));
                         this.channel = data.channel || argv.channel;
                         data.mute = this.mute;
+                        this.appendConversation(data);
                         this.emit('received', data);
                     })
                     .on('close', (code, data) => this.emit('close', { user: 'whir', message: data }));
@@ -39,12 +42,20 @@ class Whir extends EventEmitter {
 
         this.socket.send(JSON.stringify(data), { binary: true, mask: true });
         if (data.message.match(/^\/[\w]/)) {
-            data.action = {
-                method: 'command'
-            };
+            data.command = data.message.replace(/^\//g, '');
         }
 
+        this.appendConversation(data);
         this.emit('sent', data);
+    }
+
+    appendConversation (data) {
+
+        this.conversation.push({
+            user: data.user,
+            message: data.message,
+            timestamp: (new Date()).getTime()
+        });
     }
 }
 

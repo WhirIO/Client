@@ -1,9 +1,10 @@
 'use strict';
 
 
+const co = require('co');
 const WS = require('ws');
+const crypto = _require('library/crypto');
 const EventEmitter = require('events').EventEmitter;
-const helper = _require('library/whir');
 
 class Whir extends EventEmitter {
 
@@ -13,9 +14,8 @@ class Whir extends EventEmitter {
         this.conversation = [];
         this.conversationIndex = 0;
         this.host = argv.host || 'chat.whir.io';
-        helper.getHeaders(argv)
+        this.getHeaders(argv)
             .then(headers => {
-
                 this.user = argv.user;
                 this.mute = argv.mute || false;
                 this.socket = new WS(`ws://${this.host}`, headers);
@@ -47,6 +47,27 @@ class Whir extends EventEmitter {
 
         this.appendConversation(data);
         this.emit('sent', data);
+    }
+
+    getHeaders (argv) {
+        if (argv.file) {
+            argv = require(argv.file);
+        }
+
+        const headers = {};
+        const connParams = ['channel', 'user', 'max', 'timeout'];
+        for (let arg in argv) {
+            if (argv[arg] && connParams.indexOf(arg) >= 0) {
+                headers[`x-whir-${arg}`] = argv[arg];
+            }
+        }
+
+        return co(function* () {
+            const randomBytes = yield crypto.bytes(128);
+            headers['x-whir-session'] = crypto.hash(randomBytes, 'RSA-SHA256');
+
+            return { headers: headers };
+        }).then(headers => Promise.resolve(headers), error => Promise.reject(error));
     }
 
     appendConversation (data) {

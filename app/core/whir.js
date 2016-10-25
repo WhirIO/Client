@@ -2,6 +2,7 @@
 
 
 const co = require('co');
+const fs = require('fs');
 const WS = require('ws');
 const crypto = _require('library/crypto');
 const EventEmitter = require('events').EventEmitter;
@@ -11,8 +12,9 @@ class Whir extends EventEmitter {
     constructor (argv = {}) {
 
         super();
-        this.conversation = [];
-        this.conversationIndex = 0;
+        this.history = [];
+        this.historyIndex = 0;
+        this.historyLoaded = false;
         this.host = argv.host || 'chat.whir.io';
         this.getHeaders(argv)
             .then(headers => {
@@ -25,7 +27,13 @@ class Whir extends EventEmitter {
                         data = JSON.parse(data.toString('utf8'));
                         this.channel = data.channel || argv.channel;
                         data.mute = this.mute;
-                        this.appendConversation(data);
+
+                        if (!this.historyLoaded) {
+                            this.loadHistory(data, this.emit.bind(this, 'history'));
+                        } else {
+                            this.appendHistory(data);
+                        }
+
                         this.emit('received', data);
                     })
                     .on('close', (code, data) => this.emit('close', { user: 'whir', message: data }));
@@ -45,7 +53,8 @@ class Whir extends EventEmitter {
             data.command = data.message.replace(/^\//g, '');
         }
 
-        this.appendConversation(data);
+        this.historyIndex = 0;
+        this.appendHistory(data);
         this.emit('sent', data);
     }
 
@@ -70,12 +79,38 @@ class Whir extends EventEmitter {
         }).then(headers => Promise.resolve(headers), error => Promise.reject(error));
     }
 
-    appendConversation (data) {
+    appendHistory (data) {
 
-        this.conversation.push({
+        this.history.push({
             user: data.user,
             message: data.message,
             timestamp: (new Date()).getTime()
+        });
+    }
+
+    loadHistory (data, callback) {
+
+        fs.readFile(`./history/${this.user}.${this.channel}.json`, (error, history) => {
+            if (!error) {
+                this.history = JSON.parse(history);
+                this.appendHistory(data);
+            }
+
+            this.historyLoaded = true;
+            callback();
+        });
+    }
+
+    saveHistory () {
+
+        return new Promise((yes, no) => {
+            fs.writeFile(`./history/${this.user}.${this.channel}.json`, JSON.stringify(this.history), error => {
+                if (error) {
+                    return no('An error has occurred; your conversation could not be saved.');
+                }
+
+                return yes();
+            });
         });
     }
 }

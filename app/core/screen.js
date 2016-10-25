@@ -24,7 +24,7 @@ class Screen {
         });
         */
 
-        this.screen.key(['escape', 'C-c'], this.destroy);
+        this.screen.key(['escape', 'C-c'], this.destroy.bind(this, whir));
 
         this.screen.append(this.title());
         this.screen.append(this.users());
@@ -117,6 +117,15 @@ class Screen {
         return this.timeline;
     }
 
+    loadHistory () {
+        this.whir.history.forEach(data => {
+            data.mute = true;
+            this.echo(data, data.user, false);
+        });
+
+        this.render();
+    }
+
     input () {
 
         this.input = blessed.textbox({
@@ -145,32 +154,32 @@ class Screen {
             inputOnFocus: true
         });
 
+        /**
+         * Enable scrolling through the conversation with the arrow keys.
+         * @see this.input.key('up', history);
+         * @see this.input.key('down', history);
+         */
         const history = (char, key) => {
 
-            const operator = () => {
-                return key.name === 'up' ?
-                    this.whir.conversationIndex < this.whir.conversation.length :
-                    this.whir.conversationIndex > 1;
-            };
+            const condition = () => key.name === 'up' ?
+                    this.whir.historyIndex < this.whir.history.length :
+                    this.whir.historyIndex > 1;
 
-            if (this.whir.conversation.length) {
+            if (this.whir.history.length) {
                 let found = false;
-                do {
-                    if (operator()) {
-                        this.whir.conversationIndex = key.name === 'up' ?
-                            this.whir.conversationIndex + 1 :
-                            this.whir.conversationIndex - 1;
-
-                        let data = this.whir.conversation[this.whir.conversation.length - this.whir.conversationIndex];
+                while (!found) {
+                    if (condition()) {
+                        this.whir.historyIndex += key.name === 'up' ? 1 : -1;
+                        let data = this.whir.history[this.whir.history.length - this.whir.historyIndex];
                         if (data.user === this.whir.user) {
                             found = true;
                             this.input.setValue(data.message);
                             this.render();
                         }
-                    } else {
-                        found = true;
+                        continue;
                     }
-                } while (!found);
+                    found = true;
+                }
             }
         };
 
@@ -183,7 +192,6 @@ class Screen {
                 return this.render();
             }
 
-            this.whir.conversationIndex = 0;
             this.input.clearValue();
             this.whir.send(value.trim());
         });
@@ -191,7 +199,7 @@ class Screen {
         return this.input;
     }
 
-    echo (data, sender = 'whir') {
+    echo (data, sender = 'whir', render = true) {
 
         if (data.command === 'exit') {
             return this.destroy();
@@ -269,7 +277,9 @@ class Screen {
         this.lastSender = data.user;
         this.title.setText(`Channel: ${data.channel} | User: ${this.whir.user} | Users: ${this.users.children.length + 1}`);
 
-        this.render();
+        if (render) {
+            this.render();
+        }
         return this;
     }
 
@@ -288,7 +298,7 @@ class Screen {
             },
             align: 'center',
             valign: 'middle',
-            content: data.message + '\n\nPress `esc` to close the application.',
+            content: (data.message || data) + '\n\nPress `esc` to close the application.',
             tags: true,
             border: {
                 type: 'line'
@@ -312,9 +322,16 @@ class Screen {
         this.screen.render();
     }
 
-    destroy () {
-        this.screen.destroy();
-        return process.exit(0);
+    destroy (whir) {
+
+        whir.saveHistory()
+            .then(() => {
+                this.screen.destroy();
+                return process.exit(0);
+            })
+            .catch(error => {
+                this.error(error);
+            });
     }
 }
 

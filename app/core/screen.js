@@ -22,6 +22,7 @@ class Screen {
         });
 
         this.screen.key(['escape', 'C-c'], () => {
+            this.screen.destroy();
             return process.exit(0);
         });
 
@@ -63,13 +64,20 @@ class Screen {
             top: 3,
             keys: true,
             border: 'line',
+            interactive: false,
+            padding: {
+                top: 0,
+                right: 0,
+                bottom: 1,
+                left: 1
+            },
             style: {
                 border: {
                     fg: 'white'
                 },
                 selected: {
-                    fg: 'white',
-                    bg: 'blue'
+                    bg: 'green',
+                    fg: 'black',
                 }
             }
         });
@@ -130,7 +138,7 @@ class Screen {
                     bg: 'default'
                 }
             },
-            left: '24%+1',
+            left: '25%-1',
             height: 5,
             top: '100%-5',
             keys: true,
@@ -153,7 +161,6 @@ class Screen {
 
     echo (data, sender = 'whir') {
 
-        data.message = data.message.replace(/_(\w+)_/gi, chalk.green.underline('$1'));
         if (sender !== 'me' && !data.mute) {
             process.stdout.write('\u0007');
         }
@@ -163,10 +170,31 @@ class Screen {
         }
 
         this.lastUserCount = data.users || this.lastUserCount;
-        let line = chalk.green(`${data.user}:`) + ' ' + emoji.process(data.message);
+
+        if (data.action) {
+            switch (data.action.method) {
+                case 'join': this.users.addItem(data.action.user);
+                    break;
+                case 'leave': this.users.removeItem(data.action.user);
+                    break;
+            }
+        }
+
+        if (data.currentUsers) {
+            data.currentUsers = data.currentUsers
+                .concat(this.users.children)
+                .filter((x, i, a) => a.indexOf(x) == i)
+                .sort();
+
+            this.users.setItems(data.currentUsers);
+        }
+
+        data.message = data.message.replace(/_(\w+)_/gi, chalk.green.underline('$1'));
+        data.message = emoji.process(data.message);
+        let line = chalk.green(`${data.user}:`) + ' ' + data.message;
         this.timeline.pushLine(line);
         this.timeline.setScrollPerc(100);
-        this.title.setText(`User: ${this.whir.user} | Channel: ${data.channel} | Users: ${this.lastUserCount}`);
+        this.title.setText(`Channel: ${data.channel} | User: ${this.whir.user} | Users: ${this.lastUserCount}`);
         this.render();
 
         this.lastSender = data.user;
@@ -207,6 +235,7 @@ class Screen {
     }
 
     render () {
+
         this.input.focus();
         this.screen.render();
     }

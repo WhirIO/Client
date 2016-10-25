@@ -2,6 +2,9 @@
 	<a href="http://whir.io"><img src="media/whir.png" alt="whir.io" /></a>
 </p>
 
+<p>
+    <a href="https://asciinema.org/a/4ff69bzz484gopw5hno3ietmm" target="_blank"><img src="https://asciinema.org/a/4ff69bzz484gopw5hno3ietmm.png" /></a>
+</p>
 
 ```
 This is still under development.

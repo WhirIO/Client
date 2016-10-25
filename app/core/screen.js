@@ -183,7 +183,7 @@ class Screen {
         if (data.currentUsers) {
             data.currentUsers = data.currentUsers
                 .concat(this.users.children)
-                .filter((x, i, a) => a.indexOf(x) == i)
+                .filter((x, i, a) => a.indexOf(x) === i)
                 .sort();
 
             this.users.setItems(data.currentUsers);

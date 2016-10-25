@@ -6,17 +6,16 @@ const crypto = require('./crypto');
 
 module.exports = {
 
-    getHeaders: args => {
-
-        const headers = {};
-
-        if (args.file) {
-            args = require(args.file);
+    getHeaders: argv => {
+        if (argv.file) {
+            argv = require(argv.file);
         }
 
-        for (let arg in args) {
-            if (!Array.isArray(args[arg])) {
-                headers[`x-whir-${arg}`] = args[arg];
+        const headers = {};
+        const connParams = ['channel', 'user', 'max', 'timeout'];
+        for (let arg in argv) {
+            if (argv[arg] && connParams.indexOf(arg) >= 0) {
+                headers[`x-whir-${arg}`] = argv[arg];
             }
         }
 

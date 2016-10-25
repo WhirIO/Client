@@ -7,45 +7,21 @@ const helper = _require('library/whir');
 
 class Whir extends EventEmitter {
 
-    constructor (args = {}) {
-
-        const host = args.host || 'chat.whir.io';
-        if (!args.user) {
-            throw new Error('I need, at least, a username to connect with.');
-        }
+    constructor (argv = {}) {
 
         super();
-        /*
-        process.stdin.setEncoding('utf8');
-        process.stdout.setEncoding('utf8');
-        process.stdin.on('data', input => {
-            input = input.trim();
-            if (!input) {
-                process.stdout.write('\u001b[1A');
-                process.stdout.write('\u001b[2C');
-                return;
-            }
-
-            if (input === '/exit') {
-                console.log();
-                process.exit(0);
-            }
-
-            this.send(input);
-        });
-        */
-
-        helper.getHeaders(args)
+        const host = argv.host || 'chat.whir.io';
+        helper.getHeaders(argv)
             .then(headers => {
 
-                this.user = args.user;
-                this.mute = args.mute || false;
+                this.user = argv.user;
+                this.mute = argv.mute || false;
                 this.socket = new WS(`ws://${host}`, headers);
                 this.socket
-                    .on('open', () => {}) // process.stdout.write('\x1Bc')
+                    .on('open', () => {})
                     .on('message', data => {
                         data = JSON.parse(data.toString('utf8'));
-                        this.channel = data.channel || args.channel;
+                        this.channel = data.channel || argv.channel;
                         data.mute = this.mute;
                         this.emit('received', data);
                     })

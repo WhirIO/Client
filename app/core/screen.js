@@ -130,7 +130,7 @@ class Screen {
                     bg: 'default'
                 }
             },
-            left: '24%',
+            left: '24%+1',
             height: 5,
             top: '100%-5',
             keys: true,
@@ -162,10 +162,11 @@ class Screen {
             this.timeline.pushLine('');
         }
 
-        let line = chalk.green(`${data.user}:`) + ' ' + emoji.process(data.message).toString('utf-8');
+        this.lastUserCount = data.users || this.lastUserCount;
+        let line = chalk.green(`${data.user}:`) + ' ' + emoji.process(data.message);
         this.timeline.pushLine(line);
         this.timeline.setScrollPerc(100);
-        this.title.setText(`Channel: ${data.channel} | Connected users: ${data.users}`);
+        this.title.setText(`User: ${this.whir.user} | Channel: ${data.channel} | Users: ${this.lastUserCount}`);
         this.render();
 
         this.lastSender = data.user;

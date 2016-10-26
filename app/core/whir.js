@@ -34,7 +34,7 @@ class Whir extends EventEmitter {
                         data.mute = this.mute;
 
                         if (!this.historyLoaded) {
-                            return this.loadHistory(data, this.emit.bind(this, 'history'));
+                            this.loadHistory(data, this.emit.bind(this, 'history'));
                         }
 
                         this.emit('received', data);

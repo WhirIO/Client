@@ -6,6 +6,7 @@ const fs = require('fs');
 const WS = require('ws');
 const path = require('path');
 const crypto = _require('library/crypto');
+const Screen = require('./screen');
 const EventEmitter = require('events').EventEmitter;
 
 class Whir extends EventEmitter {
@@ -24,23 +25,23 @@ class Whir extends EventEmitter {
                 this.mute = argv.mute || false;
                 this.socket = new WS(`ws://${this.host}`, headers);
                 this.socket
-                    .on('open', () => {})
+                    .on('open', () => {
+                        this.screen = new Screen(this);
+                    })
                     .on('message', data => {
                         data = JSON.parse(data.toString('utf8'));
                         this.channel = data.channel || argv.channel;
                         data.mute = this.mute;
 
                         if (!this.historyLoaded) {
-                            this.loadHistory(data, this.emit.bind(this, 'history'));
-                        } else {
-                            this.appendHistory(data);
+                            return this.loadHistory(data, this.emit.bind(this, 'history'));
                         }
 
                         this.emit('received', data);
                     })
-                    .on('close', (code, data) => this.emit('close', { user: 'whir', message: data }));
+                    .on('close', (code, data) => this.emit('close', { message: data }));
             })
-            .catch(error => console.error(error));
+            .catch(error => this.emit('error', { message: error }));
     }
 
     send (message) {
@@ -54,6 +55,9 @@ class Whir extends EventEmitter {
         this.socket.send(JSON.stringify(data), { binary: true, mask: true });
         if (data.message.match(/^\/[\w]/)) {
             data.command = data.message.replace(/^\//g, '');
+            if (data.command === 'exit') {
+                return this.screen.destroy();
+            }
         }
 
         this.historyIndex = 0;
@@ -107,8 +111,11 @@ class Whir extends EventEmitter {
 
         return new Promise(yes => {
             fs.writeFile(`${this.historyPath}/${this.user}.${this.channel}.json`, JSON.stringify(this.history), error => {
-                error = error ? 'An error has occurred; your conversation could not be saved.' : null;
-                return yes(error);
+                if (error) {
+                    return this.emit('error', 'Your conversation could not be saved.');
+                }
+
+                yes();
             });
         });
     }

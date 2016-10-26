@@ -31,9 +31,14 @@ class Screen extends Components {
     }
 
     populateTimeline () {
-        this.whir.history.forEach(data => {
-            data.mute = true;
+        let muteStatus = this.muteChannel;
+        this.muteChannel = true;
+        this.whir.history.forEach((data, index) => {
             data.channel = this.whir.channel;
+            if (index === this.whir.history.length - 1) {
+                this.muteChannel = muteStatus;
+            }
+
             this.print(data, data.user, false);
         });
 
@@ -45,7 +50,7 @@ class Screen extends Components {
         /**
          * Notification sound on incoming messages, when mute = false
          */
-        if (sender !== 'me' && !data.mute) {
+        if (sender !== 'me' && !this.muteChannel) {
             process.stdout.write('\u0007');
         }
 
@@ -112,7 +117,7 @@ class Screen extends Components {
          * @see this.users
          */
         this.lastSender = data.user;
-        this.title.setText(`Channel: ${data.channel} | User: ${this.whir.user} | Users: ${this.users.children.length + 1}`);
+        this.title.setText(`${this.muteChannel ? '\uD83D\uDD07' : '\uD83D\uDD09'}  Channel: ${data.channel} | User: ${this.whir.user} | Users: ${this.users.children.length + 1}` );
 
         if (render) {
             this.render();

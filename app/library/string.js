@@ -9,12 +9,13 @@ module.exports = {
         return emoji[icon] || match;
     }),
 
-    pad: (string, side = 'right', char = ' ', total = 10) => {
-        if (!string || string.length >= total) {
+    pad: (string, side = 'right', units = 10, char = ' ') => {
+        units = units === false ? 0 : 10;
+        if (!string || string.length >= units) {
             return string;
         }
 
-        const pad = (total - string.length) / char.length;
+        const pad = (units - string.length) / char.length;
         for (let i = 0; i < pad; i++) {
             if (side === 'left') {
                 string = char + string;

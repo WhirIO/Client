@@ -63,7 +63,10 @@ class Whir extends EventEmitter {
         }
 
         this.historyIndex = 0;
-        this.appendHistory(data);
+        if (!data.command) {
+            this.appendHistory(data);
+        }
+
         this.emit('sent', data);
     }
 

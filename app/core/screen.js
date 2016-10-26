@@ -2,6 +2,7 @@
 
 
 const chalk = require('chalk');
+const moment = require('moment');
 const string = _require('library/string');
 const Components = require('./components');
 
@@ -104,8 +105,21 @@ class Screen extends Components {
             let line = chalk.green(`${data.user}:`) + ' ' + data.message;
             this.timeline.pushLine(line);
         } else if (data.payload) {
-            for (let item in data.payload) {
-                let line = chalk.green(`/${string.pad(item)}`) + data.payload[item];
+
+            /**
+             * The response is flexible in order to accommodate
+             * various operations based on whatever the server returns.
+             * Currently only the "date" is in use.
+             */
+            for (let item in data.payload.items) {
+                let passedItem;
+                switch (data.payload.items[item].type) {
+                    case 'date': passedItem = moment(data.payload.items[item].value).fromNow();
+                        break;
+                    default: passedItem = data.payload.items[item].value;
+                }
+
+                let line = chalk.green(`\u258B ${string.pad(item, 'right', data.payload.pad)} `) + passedItem;
                 this.timeline.pushLine(line);
             }
         }

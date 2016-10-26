@@ -10,9 +10,7 @@ const argv = require('yargs')
         user: { alias: 'u', describe: 'Username.', demand: true },
         channel: { alias: 'c', describe: 'Channel.', default: null },
         host: { alias: 'h', describe: 'Whir.io server.', default: 'chat.whir.io' },
-        max: { alias: 'm', describe: 'Users per channel.', default: 1000 },
-        timeout: { alias: 't', describe: 'Disconnect after [timeout].', default: 0 },
-        mute: { alias: 'mm', describe: 'Mute the conversation.', default: false }
+        mute: { alias: 'm', describe: 'Mute the conversation.' }
     })
     .usage('\nUsage: whir.io --user=[user]')
     .example('whir.io --user=stefan')

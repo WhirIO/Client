@@ -37,7 +37,8 @@ class Whir extends EventEmitter {
                         this.emit('received', data);
                     })
                     .on('close', (code, data) => this.emit('close', { user: 'whir', message: data }));
-            });
+            })
+            .catch(error => console.error(error));
     }
 
     send (message) {
@@ -59,21 +60,20 @@ class Whir extends EventEmitter {
     }
 
     getHeaders (argv) {
-        if (argv.file) {
-            argv = require(argv.file);
-        }
-
-        const headers = {};
-        const connParams = ['channel', 'user', 'max', 'timeout'];
-        for (let arg in argv) {
-            if (argv[arg] && connParams.indexOf(arg) >= 0) {
-                headers[`x-whir-${arg}`] = argv[arg];
-            }
-        }
 
         return co(function* () {
-            const randomBytes = yield crypto.bytes(128);
-            headers['x-whir-session'] = crypto.hash(randomBytes, 'RSA-SHA256');
+
+            const headers = {
+                'x-whir-session': crypto.hash(yield crypto.bytes(128), 'RSA-SHA256')
+            };
+
+            if (argv.channel) {
+                headers['x-whir-channel'] = argv.channel;
+            }
+
+            if (argv.user) {
+                headers['x-whir-user'] = argv.user;
+            }
 
             return { headers: headers };
         }).then(headers => Promise.resolve(headers), error => Promise.reject(error));

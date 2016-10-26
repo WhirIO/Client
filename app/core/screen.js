@@ -120,6 +120,7 @@ class Screen {
     loadHistory () {
         this.whir.history.forEach(data => {
             data.mute = true;
+            data.channel = this.whir.channel;
             this.echo(data, data.user, false);
         });
 
@@ -256,7 +257,7 @@ class Screen {
          * In case an extra payload was sent by the server, render that as well.
          * Scroll the timeline to the bottom.
          */
-        data.message = data.message.replace(/_(\w+)_/gi, chalk.green.underline('$1'));
+        data.message = data.message.replace(/_(\w.+)_/gi, chalk.green.underline('$1'));
         data.message = string.emojinize(data.message);
         if (!data.payload && !data.command) {
             let line = chalk.green(`${data.user}:`) + ' ' + data.message;

@@ -326,12 +326,12 @@ class Screen {
     destroy (whir) {
 
         whir.saveHistory()
-            .then(() => {
+            .then(error => {
                 this.screen.destroy();
-                return process.exit(0);
-            })
-            .catch(error => {
-                this.error(error);
+                if (error) {
+                    console.error(`\n > ${error}\n`);
+                }
+                return process.exit();
             });
     }
 }

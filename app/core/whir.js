@@ -4,6 +4,7 @@
 const co = require('co');
 const fs = require('fs');
 const WS = require('ws');
+const path = require('path');
 const crypto = _require('library/crypto');
 const EventEmitter = require('events').EventEmitter;
 
@@ -15,6 +16,7 @@ class Whir extends EventEmitter {
         this.history = [];
         this.historyIndex = 0;
         this.historyLoaded = false;
+        this.historyPath = path.normalize(`${__dirname}/../../history`);
         this.host = argv.host || 'chat.whir.io';
         this.getHeaders(argv)
             .then(headers => {
@@ -90,7 +92,7 @@ class Whir extends EventEmitter {
 
     loadHistory (data, callback) {
 
-        fs.readFile(`./history/${this.user}.${this.channel}.json`, (error, history) => {
+        fs.readFile(`${this.historyPath}/${this.user}.${this.channel}.json`, (error, history) => {
             if (!error) {
                 this.history = JSON.parse(history);
                 this.appendHistory(data);
@@ -103,13 +105,10 @@ class Whir extends EventEmitter {
 
     saveHistory () {
 
-        return new Promise((yes, no) => {
-            fs.writeFile(`./history/${this.user}.${this.channel}.json`, JSON.stringify(this.history), error => {
-                if (error) {
-                    return no('An error has occurred; your conversation could not be saved.');
-                }
-
-                return yes();
+        return new Promise(yes => {
+            fs.writeFile(`${this.historyPath}/${this.user}.${this.channel}.json`, JSON.stringify(this.history), error => {
+                error = error ? 'An error has occurred; your conversation could not be saved.' : null;
+                return yes(error);
             });
         });
     }

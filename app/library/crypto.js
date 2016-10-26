@@ -15,11 +15,6 @@ module.exports = {
         });
     }),
 
-    hmac: (data, algorithm = 'RSA-SHA512', encoding = 'hex', key) => crypto
-        .createHmac(algorithm, key)
-        .update(data)
-        .digest(encoding),
-
     hash: (data, algorithm = 'RSA-SHA512', encoding = 'hex') => {
         if (typeof data !== 'string') {
             data = JSON.stringify(data);

@@ -2,53 +2,45 @@
 	<a href="http://whir.io"><img src="media/whir.png" alt="whir.io" /></a>
 </p>
 
+<p>
+    <a href="https://asciinema.org/a/4ff69bzz484gopw5hno3ietmm" target="_blank"><img src="https://asciinema.org/a/4ff69bzz484gopw5hno3ietmm.png" /></a>
+</p>
 
 ```
 This is still under development.
-It might be unstable until this notice removed.
+It might be unstable until this notice is removed.
 ```
 
 ### Getting started:
 ```
 $> npm install -g whir.io
-$> whir.io --user=stefan [options]
 ```
 
 ### Options:
-- `--user`: Your username for a particular channel.
-- `--channel`: The channel to join. Default: `whir generated name`
-- `--host`: The server running Whir. Default: `chat.whir.io`.
-- `--max`: Max. users per channel (Only for new channels). Default: `1000`.
-- `--timeout`: Disconnect after [timeout] seconds. Default: `0` (no timeout).
-- `--file`: Read your settings from file. This overrides the other options.
+- `--user || -u`: Your username for a particular channel. `Required`
+- `--channel || -c`: The channel to join. Default: `whir generated name`
+- `--host || -h`: The server running Whir. Default: `chat.whir.io`
+- `--mute || -m`: Mute the conversation. Does not require a value.
 
-### Additional flags (these do not require values):
-
-- `--mute`: Mute the conversation, no notification alerts on new messages.
-- `--trace`: On errors, print the error stack.
-
-### Example use:
+### Example uses:
 ```
-$> whir.io --channel=box --user=stefan --mute
+$> whir.io --user=stefan --channel=friends
 ```
 
-### Settings file:
-If you want store your connection parameters in a file instead of passing them as arguments:
+or
 
 ```
-{
-  "user": "stefan",
-  "channel": "box",
-  "timeout": 10,
-  "max": 25
-}
+$> whir.io -u=stefan -c=friends
 ```
 
-then
+or
 
 ```
-$> whir.io --file=[path_to_file]
+$> whir.io -u=stefan -m
+// You will be connected to a randomly named channel.
+// The conversation is muted.
 ```
+
 
 ### License
 

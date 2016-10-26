@@ -3,22 +3,34 @@
 
 
 global._require = module => require(`${__dirname}/${module}`);
-const args = require('minimist')(process.argv.slice(2));
-const render = _require('library/render');
 const Whir = _require('core/whir');
+const Screen = _require('core/screen');
+const argv = require('yargs')
+    .options({
+        user: { alias: 'u', describe: 'Username.', demand: true },
+        channel: { alias: 'c', describe: 'Channel.', default: null },
+        host: { alias: 'h', describe: 'Whir.io server.', default: 'chat.whir.io' },
+        mute: { alias: 'm', describe: 'Mute the conversation.' }
+    })
+    .usage('\nUsage: whir.io --user=[user]')
+    .example('whir.io --user=stefan')
+    .example('whir.io --user=stefan --channel=box')
+    .epilogue('For more information, visit https://whir.io')
+    .argv;
 
 try {
-    const whir = new Whir(args);
-    whir.on('sent', text => render(text, 'me'))
-        .on('received', text => render(text))
-        .on('close', text => render(text, 'whir', true))
-        .on('error', text => render(text, 'whir', true));
+    const whir = new Whir(argv);
+    const screen = new Screen(whir);
+
+    whir.on('sent', data => screen.echo(data, 'me'))
+        .on('received', data => screen.echo(data))
+        .on('close', data => screen.error(data))
+        .on('error', data => screen.error(data))
+        .on('history', () => screen.loadHistory());
 
 } catch (error) {
     console.error('\n' + error.message);
-    if (args.trace) {
-        console.error(error.stack + '\n');
-    }
+    console.error(error.stack + '\n');
 
     process.exit(1);
 }

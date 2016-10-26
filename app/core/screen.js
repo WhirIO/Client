@@ -24,7 +24,8 @@ class Screen {
         });
         */
 
-        this.screen.key(['escape', 'C-c'], this.destroy.bind(this, whir));
+        this.destroy = this.destroy.bind(this, whir);
+        this.screen.key(['escape', 'C-c'], this.destroy);
 
         this.screen.append(this.title());
         this.screen.append(this.users());

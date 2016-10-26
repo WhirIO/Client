@@ -7,13 +7,14 @@ const Whir = _require('core/whir');
 const argv = require('yargs')
     .options({
         user: { alias: 'u', describe: 'Username.', demand: true },
+        pass: { alias: 'p', describe: 'Password.', default: null },
         channel: { alias: 'c', describe: 'Channel.', default: null },
         host: { alias: 'h', describe: 'Whir.io server.', default: 'chat.whir.io' },
         mute: { alias: 'm', describe: 'Mute the conversation.' }
     })
     .usage('\nUsage: whir.io --user=[user]')
     .example('whir.io --user=stefan')
-    .example('whir.io --user=stefan --channel=box')
+    .example('whir.io --user=stefan --channel=friends')
     .epilogue('For more information, visit https://whir.io')
     .argv;
 

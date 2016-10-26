@@ -96,15 +96,18 @@ class Screen extends Components {
          * Replacements; underline, bold, italics, etc.
          * Find and replace any emoji (as per: http://www.fileformat.info/info/emoji/list.htm)
          * Format the line to be rendered.
-         * In case an extra payload was sent by the server, render that as well.
+         * Render any additional payload sent by the server.
          * Scroll the timeline to the bottom.
          */
         data.message = data.message.replace(/_(\w.+)_/gi, chalk.green.underline('$1'));
+        data.message = data.message.replace(/-(\w.+)-/gi, chalk.green('$1'));
         data.message = string.emojinize(data.message);
-        if (!data.payload && !data.command) {
-            let line = chalk.green(`${data.user}:`) + ' ' + data.message;
-            this.timeline.pushLine(line);
-        } else if (data.payload) {
+        if ((data.payload && data.payload.showTitle) || !data.command) {
+            let user = data.user ? chalk.green(`${data.user}:`) + ' ' : '';
+            this.timeline.pushLine(user + data.message);
+        }
+
+        if (data.payload) {
 
             /**
              * The response is flexible in order to accommodate

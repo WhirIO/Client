@@ -18,6 +18,7 @@ $> npm install -g whir.io
 
 ### Options:
 - `--user || -u`: Your username for a particular channel. `Required`
+- `--pass || -p`: Password, when connecting to private channels.
 - `--channel || -c`: The channel to join. Default: `whir generated name`
 - `--host || -h`: The server running Whir. Default: `chat.whir.io`
 - `--mute || -m`: Mute the conversation. Does not require a value.

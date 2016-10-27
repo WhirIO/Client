@@ -19,33 +19,40 @@ class Whir extends EventEmitter {
         this.historyLoaded = false;
         this.historyPath = path.normalize(`${__dirname}/../../history`);
         this.host = argv.host || 'chat.whir.io';
+        this.user = argv.user;
+        this.muteChannel = argv.mute || false;
         this.getHeaders(argv)
             .then(headers => {
-                this.user = argv.user;
-                this.socket = new WS(`ws://${this.host}`, headers);
-                this.socket
-                    .on('open', () => {
-                        this.screen = new Screen(this);
-                        this.screen.muteChannel = argv.mute || false;
-                    })
-                    .on('message', data => {
-                        data = JSON.parse(data.toString('utf8'));
-                        this.channel = data.channel || argv.channel;
-
-                        const whir = this;
-                        co(function *() {
-                            if (!whir.historyLoaded) {
-                                yield whir.loadHistory();
-                                whir.emit('history');
-                            }
-
-                            whir.appendHistory(data);
-                            whir.emit('received', data);
-                        });
-                    })
-                    .on('close', (code, data) => this.emit('close', { message: data }));
+                this.headers = headers;
+                this.connect();
             })
-            .catch(error => this.emit('error', { message: error }));
+            .catch(data => this.emit('error', data));
+    }
+
+    connect () {
+
+        this.socket = new WS(`ws://${this.host}`, this.headers);
+        this.socket
+            .on('open', () => {
+                this.screen = new Screen(this);
+                this.screen.muteChannel = this.muteChannel;
+            })
+            .on('message', data => {
+                data = JSON.parse(data.toString('utf8'));
+                this.channel = data.channel || argv.channel;
+
+                const whir = this;
+                co(function *() {
+                    if (!whir.historyLoaded) {
+                        yield whir.loadHistory();
+                        whir.emit('history');
+                    }
+
+                    whir.appendHistory(data);
+                    whir.emit('received', data);
+                });
+            })
+            .on('close', (code, data) => this.emit('close', data));
     }
 
     send (message) {
@@ -61,6 +68,11 @@ class Whir extends EventEmitter {
             data.command = data.message.replace(/^\//g, '');
             switch (data.command) {
                 case 'exit': return this.screen.destroy();
+                case 'clear':
+                    this.screen.timeline.getLines().forEach((lines, index) => {
+                        this.screen.timeline.deleteLine(index);
+                    });
+                    break;
                 case 'mute': this.screen.muteChannel = true;
                     break;
                 case 'unmute': this.screen.muteChannel = false;

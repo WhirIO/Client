@@ -40,11 +40,11 @@ class Screen extends Components {
                 this.muteChannel = muteStatus;
             }
 
-            this.print(data, data.user, false);
+            this.print(data, { render: false });
         });
     }
 
-    print (data, sender = 'whir', render = true) {
+    print (data, { sender = 'whir', render = true } = {}) {
 
         /**
          * Notification sound on incoming messages, when mute = false
@@ -104,7 +104,7 @@ class Screen extends Components {
             this.timeline.pushLine(data.message);
         } else if (!data.command) {
             let user = data.user ? data.user + ':' : '\u258B';
-            this.timeline.pushLine(chalk.green(user) + ' ' + data.message);
+            this.timeline.pushLine(chalk[data.alert ? 'red' : 'green'](user) + ' ' + data.message);
         }
 
         if (data.payload) {
@@ -141,12 +141,14 @@ class Screen extends Components {
         return this;
     }
 
-    notify (data) {
-        this.screen.append(this.notification(data.message));
+    alert (data) {
+
+        data = JSON.parse(data);
+        data.message = data.message || 'Your connection was abruptly terminated.';
+        data.alert = true;
+        this.timeline.height = '100%-3';
         this.input.detach();
-        this.users.detach();
-        this.timeline.detach();
-        this.render();
+        this.print(data);
     }
 
     render () {

@@ -162,29 +162,6 @@ class Components {
 
         return this.input;
     }
-
-    notification (text) {
-
-        text = text || 'Your connection was abruptly terminated.';
-        text += '\n\n';
-
-        this.notification = blessed.box({
-            screen: this.screen,
-            top: 'center',
-            left: 'center',
-            width: '86%',
-            height: '20%',
-            align: 'center',
-            padding: 2,
-            style: {
-                bg: 'red',
-                fg: 'white',
-            }
-        });
-
-        this.notification.setText(text + 'Press `esc` to close the application.');
-        return this.notification;
-    }
 }
 
 module.exports = Components;

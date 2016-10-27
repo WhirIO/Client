@@ -25,8 +25,8 @@ const whir = new Whir(argv);
  * It's easy to implement custom logic -or extended the existing one-
  * for each emitted event.
  */
-whir.on('sent', data => whir.screen.print(data, 'me'))
+whir.on('sent', data => whir.screen.print(data, { sender: 'me' }))
     .on('received', data => whir.screen.print(data))
-    .on('close', data => whir.screen.notify(data))
-    .on('error', data => whir.screen.notify(data))
+    .on('close', data => whir.screen.alert(data))
+    .on('error', data => whir.screen.alert(data))
     .on('history', () => whir.screen.populateTimeline());

@@ -42,8 +42,6 @@ class Screen extends Components {
 
             this.print(data, data.user, false);
         });
-
-        this.render();
     }
 
     print (data, sender = 'whir', render = true) {
@@ -68,12 +66,12 @@ class Screen extends Components {
          * @see this.users()
          */
         if (data.action) {
-            let method = data.action.method === 'join' ? 'addItem' :
-                data.action.method === 'leave' ? 'removeItem' :
+            let method = data.action === 'join' ? 'addItem' :
+                data.action === 'leave' ? 'removeItem' :
                 null;
 
             if (method) {
-                this.users[method](data.action.user);
+                this.users[method](data.user);
             }
         }
 
@@ -102,13 +100,14 @@ class Screen extends Components {
         data.message = data.message.replace(/_(\w.+)_/gi, chalk.green.underline('$1'));
         data.message = data.message.replace(/-(\w.+)-/gi, chalk.green('$1'));
         data.message = string.emojinize(data.message);
-        if ((data.payload && data.payload.showTitle) || !data.command) {
-            let user = data.user ? chalk.green(`${data.user}:`) + ' ' : '';
-            this.timeline.pushLine(user + data.message);
+        if (data.payload && data.payload.showTitle) {
+            this.timeline.pushLine(data.message);
+        } else if (!data.command) {
+            let user = data.user ? data.user + ':' : '\u258B';
+            this.timeline.pushLine(chalk.green(user) + ' ' + data.message);
         }
 
         if (data.payload) {
-
             /**
              * The response is flexible in order to accommodate
              * various operations based on whatever the server returns.

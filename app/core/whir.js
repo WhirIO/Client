@@ -31,11 +31,17 @@ class Whir extends EventEmitter {
                     .on('message', data => {
                         data = JSON.parse(data.toString('utf8'));
                         this.channel = data.channel || argv.channel;
-                        if (!this.historyLoaded) {
-                            this.loadHistory(data, this.emit.bind(this, 'history'));
-                        }
 
-                        this.emit('received', data);
+                        const whir = this;
+                        co(function *() {
+                            if (!whir.historyLoaded) {
+                                yield whir.loadHistory();
+                                whir.emit('history');
+                            }
+
+                            whir.appendHistory(data);
+                            whir.emit('received', data);
+                        });
                     })
                     .on('close', (code, data) => this.emit('close', { message: data }));
             })
@@ -63,10 +69,7 @@ class Whir extends EventEmitter {
         }
 
         this.historyIndex = 0;
-        if (!data.command) {
-            this.appendHistory(data);
-        }
-
+        this.appendHistory(data);
         this.emit('sent', data);
     }
 
@@ -92,6 +95,10 @@ class Whir extends EventEmitter {
 
     appendHistory (data) {
 
+        if (data.command || !data.user) {
+            return;
+        }
+
         this.history.push({
             user: data.user,
             message: data.message,
@@ -99,16 +106,17 @@ class Whir extends EventEmitter {
         });
     }
 
-    loadHistory (data, callback) {
+    loadHistory () {
 
-        fs.readFile(`${this.historyPath}/${this.user}.${this.channel}.json`, (error, history) => {
-            if (!error) {
-                this.history = JSON.parse(history);
-                this.appendHistory(data);
-            }
+        return new Promise(yes => {
+            fs.readFile(`${this.historyPath}/${this.user}.${this.channel}.json`, (error, history) => {
+                if (!error) {
+                    this.history = JSON.parse(history);
+                }
 
-            this.historyLoaded = true;
-            callback();
+                this.historyLoaded = true;
+                yes(this.history.length > 0);
+            });
         });
     }
 

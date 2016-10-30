@@ -31,7 +31,7 @@ class Whir extends EventEmitter {
 
     connect () {
 
-        this.socket = new WS(`ws://${this.host}`, this.headers);
+        this.socket = new WS(`wss://${this.host}`, this.headers);
         this.socket
             .on('open', () => {
                 this.screen = new Screen(this);

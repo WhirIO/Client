@@ -133,7 +133,7 @@ class Screen extends Components {
          * @see this.users
          */
         this.lastSender = data.user;
-        this.title.setText(`${this.muteChannel ? '\uD83D\uDD07' : '\uD83D\uDD09'}  Channel: ${data.channel} | User: ${this.whir.user} | Users: ${this.users.children.length + 1}` );
+        this.title.setText(`Channel: ${data.channel}${this.muteChannel ? ' [muted]' : ''} | User: ${this.whir.user} | Users: ${this.users.children.length + 1}` );
 
         if (render) {
             this.render();

@@ -92,17 +92,16 @@ class Whir extends EventEmitter {
 
         return co(function* () {
 
+            const fields = ['channel', 'user', 'pass'];
             const headers = {
                 'x-whir-session': crypto.hash(yield crypto.bytes(128), 'RSA-SHA256')
             };
 
-            if (argv.channel) {
-                headers['x-whir-channel'] = argv.channel;
-            }
-
-            if (argv.user) {
-                headers['x-whir-user'] = argv.user;
-            }
+            fields.forEach(field => {
+                if (argv[field]) {
+                    headers[`x-whir-${field}`] = argv[field];
+                }
+            });
 
             return { headers: headers };
         }).then(headers => Promise.resolve(headers), error => Promise.reject(error));

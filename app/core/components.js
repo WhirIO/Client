@@ -21,7 +21,7 @@ class Components {
             padding: 1,
             style: {
                 bg: 'green',
-                fg: 'black',
+                fg: 'black'
             }
         });
 
@@ -50,7 +50,7 @@ class Components {
                 },
                 selected: {
                     bg: 'green',
-                    fg: 'black',
+                    fg: 'black'
                 }
             }
         });

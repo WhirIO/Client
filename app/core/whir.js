@@ -1,13 +1,16 @@
 'use strict';
 
 
-const co = require('co');
-const fs = require('fs');
-const WS = require('ws');
-const path = require('path');
-const crypto = _require('library/crypto');
-const Screen = require('./screen');
-const EventEmitter = require('events').EventEmitter;
+const [
+    co,
+    fs,
+    WS,
+    path,
+    crypto,
+    Screen,
+    events
+] = attract('co', 'fs', 'ws', 'path', 'library/crypto', 'core/screen', 'events');
+const EventEmitter = events.EventEmitter;
 
 class Whir extends EventEmitter {
 

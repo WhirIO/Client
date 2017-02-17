@@ -1,10 +1,12 @@
 'use strict';
 
 
-const chalk = require('chalk');
-const moment = require('moment');
-const string = _require('library/string');
-const Components = require('./components');
+const [
+    chalk,
+    moment,
+    string,
+    Components
+] = attract('chalk', 'moment', 'library/string', 'core/components');
 
 class Screen extends Components {
 
@@ -133,7 +135,12 @@ class Screen extends Components {
          * @see this.users
          */
         this.lastSender = data.user;
-        this.title.setText(`${this.muteChannel ? '\uD83D\uDD07' : '\uD83D\uDD09'}  Channel: ${data.channel} | User: ${this.whir.user} | Users: ${this.users.children.length + 1}` );
+        const [
+            channel,
+            user,
+            users
+        ] = ['Channel: ${data.channel}', 'User: ${this.whir.user}', '${this.users.children.length + 1}'];
+        this.title.setText(`${this.muteChannel ? '\uD83D\uDD07' : '\uD83D\uDD09'}  ${channel} | ${user} | Users: ${users}`);
 
         if (render) {
             this.render();

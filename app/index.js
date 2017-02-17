@@ -2,10 +2,9 @@
 'use strict';
 
 
-global._require = module => require(`${__dirname}/${module}`);
-const Whir = _require('core/whir');
-const argv = require('yargs')
-    .options({
+require('attract')({ basePath: __dirname });
+const [Whir, yargs] = attract('core/whir', 'yargs');
+const argv = yargs.options({
         user: { alias: 'u', describe: 'Username.', demand: true },
         pass: { alias: 'p', describe: 'Password.', default: null },
         channel: { alias: 'c', describe: 'Channel.', default: null },
@@ -17,7 +16,6 @@ const argv = require('yargs')
     .example('whir.io --user=stefan --channel=friends')
     .epilogue('For more information, visit https://whir.io')
     .argv;
-
 const whir = new Whir(argv);
 
 /**

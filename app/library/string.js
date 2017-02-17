@@ -1,7 +1,7 @@
 'use strict';
 
 
-const emoji = _require('support/emoji.json');
+const emoji = attract('support/emoji.json');
 
 module.exports = {
 

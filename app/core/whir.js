@@ -23,6 +23,7 @@ class Whir extends EventEmitter {
         this.historyPath = path.normalize(`${__dirname}/../../history`);
         this.host = argv.host || 'chat.whir.io';
         this.user = argv.user;
+        this.channel = argv.channel;
         this.muteChannel = argv.mute || false;
         this.getHeaders(argv)
             .then(headers => {
@@ -42,18 +43,19 @@ class Whir extends EventEmitter {
             })
             .on('message', data => {
                 data = JSON.parse(data.toString('utf8'));
-                this.channel = data.channel || argv.channel;
-
-                const whir = this;
-                co(function *() {
-                    if (!whir.historyLoaded) {
-                        yield whir.loadHistory();
-                        whir.emit('history');
+                this.channel = data.channel || this.channel;
+                co.call(this, function * () {
+                    if (!this.historyLoaded) {
+                        yield this.loadHistory();
+                        this.emit('history');
                     }
 
-                    whir.appendHistory(data);
-                    whir.emit('received', data);
+                    this.appendHistory(data);
+                    this.emit('received', data);
                 });
+            })
+            .on('error', (error) => {
+                console.error(error);
             })
             .on('close', (code, data) => this.emit('close', data));
     }

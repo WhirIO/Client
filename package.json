@@ -1,68 +1,65 @@
 {
-    "name": "whir.io",
-    "version": "1.2.1",
-    "description": "The whir.io chat client.",
-    "author": {
-        "name": "Stefan Aichholzer",
-        "email": "play@analogbird.com",
-        "url": "https://github.com/aichholzer"
-    },
-    "contributors": [],
-    "maintainers": [],
-    "keywords": [
-        "chat",
-        "terminal",
-        "command",
-        "interface",
-        "cli",
-        "messenger"
-    ],
-    "homepage": "http://whir.io",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/WhirIO/Client"
-    },
-    "license": "MIT",
-    "engines": {
-        "node": ">=7.5"
-    },
-    "dependencies": {
-        "attract": "^2.0.2",
-        "blessed": "^0.1.81",
-        "bufferutil": "^2.0.1",
-        "chalk": "^1.1.3",
-        "co": "^4.6.0",
-        "moment": "^2.17.1",
-        "utf-8-validate": "^3.0.1",
-        "ws": "^2.0.3",
-        "yargs": "^6.6.0"
-    },
-    "devDependencies": {
-        "dotenv": "^4.0.0",
-        "grunt": "^1.0.1",
-        "grunt-contrib-jshint": "^1.1.0",
-        "grunt-jscs": "^3.0.1",
-        "grunt-nodemon": "^0.4.2",
-        "jscs": "^3.0.7",
-        "jshint": "^2.9.3",
-        "mocha": "^3.2.0",
-        "should": "^11.2.0"
-    },
-    "main": "./app/index.js",
-    "directories": {
-        "test": "test"
-    },
-    "scripts": {
-        "test": "./node_modules/mocha/bin/mocha -R spec -t 5000"
-    },
-    "bugs": {
-        "url": "https://github.com/WhirIO/Client/issues"
-    },
-    "_from": "whir.io@^1.1.0",
-    "_npmUser": {
-        "name": "aichholzer",
-        "email": "theaichholzer@gmail.com"
-    },
-    "preferGlobal": true,
-    "bin": "./app/index.js"
+  "name": "whir.io",
+  "version": "1.3.0",
+  "description": "The whir.io chat client. [alpha]",
+  "author": {
+    "name": "Stefan Aichholzer",
+    "email": "play@analogbird.com",
+    "url": "https://github.com/aichholzer"
+  },
+  "contributors": [],
+  "maintainers": [],
+  "keywords": [
+    "chat",
+    "terminal",
+    "command",
+    "interface",
+    "cli",
+    "messenger"
+  ],
+  "homepage": "http://whir.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WhirIO/Client"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=7.10"
+  },
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "bufferutil": "^3.0.0",
+    "chalk": "^1.1.3",
+    "moment": "^2.17.1",
+    "utf-8-validate": "^3.0.1",
+    "ws": "^3.0.0",
+    "yargs": "^8.0.1"
+  },
+  "devDependencies": {
+    "dotenv": "^4.0.0",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.2.0",
+    "eslint-plugin-import": "^2.3.0",
+    "grunt": "^1.0.1",
+    "grunt-eslint": "^19.0.0",
+    "mocha": "^3.2.0",
+    "should": "^11.2.0"
+  },
+  "main": "./app/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha -R spec -t 5000"
+  },
+  "bugs": {
+    "url": "https://github.com/WhirIO/Client/issues"
+  },
+  "_from": "whir.io@^1.2.0",
+  "_npmUser": {
+    "name": "aichholzer",
+    "email": "theaichholzer@gmail.com"
+  },
+  "preferGlobal": true,
+  "bin": "./app/index.js"
 }

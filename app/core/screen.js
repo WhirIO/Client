@@ -1,182 +1,183 @@
-'use strict';
+const chalk = require('chalk');
+const Components = require('./components');
+const moment = require('moment');
+const string = require('../library/string');
 
+class Screen {
 
-const [
-    chalk,
-    moment,
-    string,
-    Components
-] = attract('chalk', 'moment', 'library/string', 'core/components');
+  constructor(whir, { user = null, scrollSize = 250 }) {
+    this.whir = whir;
 
-class Screen extends Components {
+    this.components = new Components({
+      smartCSR: true,
+      dockBorders: true,
+      fullUnicode: true,
+      screenTitle: 'Whir.io'
+    });
 
-    constructor (whir) {
+    this.user = user;
+    this.scrollSize = scrollSize;
 
-        super({
-            smartCSR: true,
-            dockBorders: true,
-            fullUnicode: true
+    this.components.on('message', message => this.whir.send(message));
+    this.components.screen.key(['escape'], this.destroy.bind(this, true));
+    this.components.screen.append(this.components.title());
+    this.components.screen.append(this.components.users());
+    this.components.screen.append(this.components.timeline());
+    this.components.screen.append(this.components.input());
+    this.components.render();
+  }
+
+  /**
+   * This is the history for the current session only.
+   * It is non-atomic and it will be cleared when the application closes.
+   * It can be accessed using the arrow keys.
+   * @param item
+   */
+  scroll(item) {
+    if (item.user === this.user) {
+      if (this.components.scroll.length >= this.scrollSize) {
+        this.components.scroll.shift();
+      }
+
+      this.components.scroll.push(item);
+      this.components.scrollIndex = 0;
+    }
+  }
+
+  print(data, { sender = 'whir', render = true } = {}) {
+    /**
+     * Notification sound on incoming messages, when mute = false
+     */
+    if (sender !== 'me' && !this.muteChannel) {
+      process.stdout.write('\u0007');
+    }
+
+    /**
+     * A blank line between messages from different users.
+     * Might be removed if a "floating-box" approach is adopted.
+     */
+    if (this.lastSender !== data.user && !data.command) {
+      this.components.timeline.pushLine('');
+    }
+
+    /**
+     * Add or remove users from the user panel.
+     * Skip this step when loading a user's history.
+     * @see this.components.users()
+     */
+    if (!data.fromHistory) {
+      if (data.action === 'join') {
+        this.components.users.addItem(data.user);
+      } else if (data.action === 'leave') {
+        this.components.users.removeItem(data.user);
+      }
+    }
+
+    /**
+     * When establishing a connection, all users are sent back.
+     * This takes the data sent by the server and merges it with the
+     * existing users, sorts them (alphabetically) and re-populates
+     * the users list.
+     */
+    if (data.currentUsers) {
+      data.currentUsers = data.currentUsers
+        .concat(this.components.users.children)
+        .filter((x, i, a) => a.indexOf(x) === i)
+        .sort();
+
+      this.components.users.setItems(data.currentUsers);
+    }
+
+    /**
+     * Replacements; underline, bold, italics, etc.
+     * Find and replace any emoji (as per: http://www.fileformat.info/info/emoji/list.htm)
+     * Format the line to be rendered.
+     * Render any additional payload sent by the server.
+     * Scroll the timeline to the bottom.
+     */
+    data.message = data.message.replace(/_([\w\s.]+)_/gi, chalk.green.underline('$1'));
+    data.message = data.message.replace(/-([\w\s.]+)-/gi, chalk.white('$1'));
+    data.message = string.emojinize(data.message);
+
+    if (data.payload && data.payload.showTitle) {
+      this.components.timeline.pushLine(data.message);
+    } else if (!data.command) {
+      data.timestamp = moment(data.timestamp).format('HH:mm');
+      data.timestamp = `${chalk.black.bgGreen(data.timestamp)} `;
+      const user = data.user ? chalk.green(`${data.timestamp}${data.user}: `) : '';
+      if (data.alert) {
+        data.message = data.message.split('\n');
+        data.message = data.message.map((message) => {
+          message = chalk.white.bgRed(message);
+          return message;
         });
-        this.whir = whir;
-        this.screen.title = 'Whir.io';
+        data.message = data.message.join('\n');
+      }
+      this.components.timeline.pushLine(user + data.message);
+    }
 
-        this.screen.key(['escape', 'C-c'], this.destroy.bind(this, this));
-        this.screen.key('tab', () => {
-            this.screen.focusNext();
-            this.render();
+    /**
+     * The response (payload) is flexible in order to accommodate
+     * various operations based on whatever the server returns.
+     * Currently only the "date" is in use.
+     */
+    if (data.payload) {
+      let padding = null;
+      if (typeof data.payload.pad === 'number') {
+        padding = data.payload.pad;
+      } else if (data.payload.pad) {
+        padding = 0;
+        Object.entries(data.payload.items).forEach(([key]) => {
+          padding = key.length > padding ? key.length : padding;
         });
 
-        this.screen.append(this.title());
-        this.screen.append(this.users());
-        this.screen.append(this.timeline());
-        this.screen.append(this.input());
-        this.render();
+        const match = data.payload.pad.match(/\+([\d])+/i);
+        if (match) {
+          padding += parseInt(match[1], 10);
+        }
+      }
+
+      Object.entries(data.payload.items).forEach(([key, item]) => {
+        let passedItem;
+        switch (item.type) {
+          case 'date':
+            passedItem = moment(item.value).fromNow();
+            break;
+          default:
+            passedItem = item.value;
+        }
+
+        const line = `\u258B ${string.pad(key, 'right', padding)}${chalk.white(passedItem)}`;
+        this.components.timeline.pushLine(line);
+      });
+    }
+    this.components.timeline.setScrollPerc(100);
+
+    /**
+     * Keep track of the user who send the last message, just for rendering
+     * purposes and update the connected number of users.
+     * @see this.components.users
+     */
+    this.lastSender = data.user;
+    const channel = `Channel: ${data.channel}`;
+    const user = `User: ${this.whir.user}`;
+    const users = `${this.components.users.children.length + 1}`;
+    this.components.title.setText(`${this.muteChannel ? '\uD83D\uDD07' : '\uD83D\uDD09'}  ${channel} | ${user} | Users: ${users}`);
+
+    if (render) {
+      this.components.render();
     }
 
-    populateTimeline () {
-        let muteStatus = this.muteChannel;
-        this.muteChannel = true;
-        this.whir.history.forEach((data, index) => {
-            data.channel = this.whir.channel;
-            if (index === this.whir.history.length - 1) {
-                this.muteChannel = muteStatus;
-            }
+    return this;
+  }
 
-            this.print(data, { render: false });
-        });
+  destroy(exit = false) {
+    this.components.screen.destroy();
+    if (exit) {
+      console.error(`\n 👋  See you soon, ${this.user}!\n`);
+      process.exit(0);
     }
-
-    print (data, { sender = 'whir', render = true } = {}) {
-
-        /**
-         * Notification sound on incoming messages, when mute = false
-         */
-        if (sender !== 'me' && !this.muteChannel) {
-            process.stdout.write('\u0007');
-        }
-
-        /**
-         * A blank line between messages from different users.
-         * Might be removed if a "floating-boxes" approach is adopted.
-         */
-        if (this.lastSender !== data.user && !data.command) {
-            this.timeline.pushLine('');
-        }
-
-        /**
-         * Add or remove users from the user panel.
-         * @see this.users()
-         */
-        if (data.action) {
-            let method = data.action === 'join' ? 'addItem' :
-                data.action === 'leave' ? 'removeItem' :
-                null;
-
-            if (method) {
-                this.users[method](data.user);
-            }
-        }
-
-        /**
-         * When establishing a connection, all users are sent back.
-         * This takes the data sent by the server, merges it with the
-         * existing users, sorts them (alphabetically) and re-populates
-         * the list with the new array of users.
-         */
-        if (data.currentUsers) {
-            data.currentUsers = data.currentUsers
-                .concat(this.users.children)
-                .filter((x, i, a) => a.indexOf(x) === i)
-                .sort();
-
-            this.users.setItems(data.currentUsers);
-        }
-
-        /**
-         * Replacements; underline, bold, italics, etc.
-         * Find and replace any emoji (as per: http://www.fileformat.info/info/emoji/list.htm)
-         * Format the line to be rendered.
-         * Render any additional payload sent by the server.
-         * Scroll the timeline to the bottom.
-         */
-        data.message = data.message.replace(/_(\w.+)_/gi, chalk.green.underline('$1'));
-        data.message = data.message.replace(/-(\w.+)-/gi, chalk.green('$1'));
-        data.message = string.emojinize(data.message);
-        if (data.payload && data.payload.showTitle) {
-            this.timeline.pushLine(data.message);
-        } else if (!data.command) {
-            let user = data.user ? data.user + ':' : '\u258B';
-            this.timeline.pushLine(chalk[data.alert ? 'red' : 'green'](user) + ' ' + data.message);
-        }
-
-        if (data.payload) {
-            /**
-             * The response is flexible in order to accommodate
-             * various operations based on whatever the server returns.
-             * Currently only the "date" is in use.
-             */
-            for (let item in data.payload.items) {
-                let passedItem;
-                switch (data.payload.items[item].type) {
-                    case 'date': passedItem = moment(data.payload.items[item].value).fromNow();
-                        break;
-                    default: passedItem = data.payload.items[item].value;
-                }
-
-                let line = chalk.green(`\u258B ${string.pad(item, 'right', data.payload.pad)} `) + passedItem;
-                this.timeline.pushLine(line);
-            }
-        }
-        this.timeline.setScrollPerc(100);
-
-        /**
-         * Keep track of the user who send the last message, just for rendering
-         * purposes and update the connected number of users.
-         * @see this.users
-         */
-        this.lastSender = data.user;
-        const [
-            channel,
-            user,
-            users
-        ] = ['Channel: ${data.channel}', 'User: ${this.whir.user}', '${this.users.children.length + 1}'];
-        this.title.setText(`${this.muteChannel ? '\uD83D\uDD07' : '\uD83D\uDD09'}  ${channel} | ${user} | Users: ${users}`);
-
-        if (render) {
-            this.render();
-        }
-        return this;
-    }
-
-    alert (data) {
-
-        data = JSON.parse(data);
-        data.message = data.message || 'Your connection was abruptly terminated.';
-        data.alert = true;
-        this.timeline.height = '100%-3';
-        this.input.detach();
-        this.print(data);
-    }
-
-    render () {
-
-        if (!this.input.detached) {
-            this.input.focus();
-        }
-        this.screen.render();
-    }
-
-    destroy () {
-
-        this.whir.saveHistory()
-            .then(error => {
-                this.screen.destroy();
-                if (error) {
-                    console.error(`\n > ${error}\n`);
-                }
-                return process.exit();
-            });
-    }
+  }
 }
 
 module.exports = Screen;

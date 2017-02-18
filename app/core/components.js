@@ -1,167 +1,182 @@
-'use strict';
-
-
 const blessed = require('blessed');
+const Emitter = require('events').EventEmitter;
 
-class Components {
+class Components extends Emitter {
 
-    constructor (options) {
+  constructor(options) {
+    super();
 
-        this.screen = blessed.screen(options);
-        this.screen.title = 'Whir.io';
+    this.screen = blessed.screen(options);
+    this.screen.title = options.screenTitle;
+
+    this.scroll = [];
+    this.scrollIndex = 0;
+  }
+
+  render(status = null) {
+    if (status === 'no_history') {
+      return;
     }
 
-    title () {
-
-        this.title = blessed.text({
-            screen: this.screen,
-            top: 0,
-            width: '100%',
-            height: 3,
-            padding: 1,
-            style: {
-                bg: 'green',
-                fg: 'black'
-            }
-        });
-
-        this.title.setText('whir.io');
-        return this.title;
+    if (!this.input.detached) {
+      this.input.focus();
     }
 
-    users () {
+    this.screen.render();
+  }
 
-        this.users = blessed.list({
-            screen: this.screen,
-            width: '25%',
-            top: 3,
-            keys: true,
-            border: 'line',
-            interactive: false,
-            padding: {
-                top: 0,
-                right: 0,
-                bottom: 1,
-                left: 1
-            },
-            style: {
-                border: {
-                    fg: 'white'
-                },
-                selected: {
-                    bg: 'green',
-                    fg: 'black'
-                }
-            }
-        });
+  title() {
+    this.title = blessed.text({
+      screen: this.screen,
+      top: 0,
+      width: '100%',
+      height: 3,
+      padding: 1,
+      style: {
+        bg: 'green',
+        fg: 'black'
+      }
+    });
 
-        return this.users;
-    }
+    this.title.setText(this.screen.title);
+    return this.title;
+  }
 
-    timeline () {
+  users() {
+    this.users = blessed.list({
+      screen: this.screen,
+      width: '25%',
+      top: 3,
+      keys: true,
+      border: 'line',
+      interactive: false,
+      padding: {
+        top: 0,
+        right: 0,
+        bottom: 1,
+        left: 1
+      },
+      style: {
+        border: {
+          fg: 'white'
+        },
+        selected: {
+          bg: 'green',
+          fg: 'black'
+        }
+      }
+    });
 
-        this.timeline = blessed.box({
-            screen: this.screen,
-            keys: true,
-            top: 3,
-            left: '25%-1',
-            height: '100%-7',
-            border: 'line',
-            scrollable: true,
-            alwaysScroll: true,
-            scrollbar: true,
-            padding: {
-                top: 1,
-                right: 0,
-                bottom: 1,
-                left: 2
-            },
-            style: {
-                border: {
-                    fg: 'white'
-                },
-                scrollbar: {
-                    bg: 'white',
-                    fg: 'black'
-                }
-            }
-        });
+    return this.users;
+  }
 
-        return this.timeline;
-    }
+  timeline() {
+    this.timeline = blessed.box({
+      screen: this.screen,
+      mouse: true,
+      top: 3,
+      left: '25%-1',
+      height: '100%-7',
+      border: 'line',
+      scrollable: true,
+      alwaysScroll: true,
+      scrollbar: true,
+      padding: {
+        top: 1,
+        right: 0,
+        bottom: 1,
+        left: 2
+      },
+      style: {
+        border: {
+          fg: 'white'
+        },
+        scrollbar: {
+          bg: 'white',
+          fg: 'black'
+        }
+      }
+    });
 
-    input () {
+    return this.timeline;
+  }
 
-        this.input = blessed.textbox({
-            content: '',
-            screen: this.screen,
-            border: 'line',
-            padding: {
-                top: 1,
-                right: 2,
-                bottom: 1,
-                left: 2
-            },
-            style: {
-                fg: 'default',
-                bg: 'default',
-                border: {
-                    fg: 'white',
-                    bg: 'default'
-                }
-            },
-            left: '25%-1',
-            height: 5,
-            top: '100%-5',
-            keys: true,
-            mouse: true,
-            inputOnFocus: true
-        });
+  input() {
+    this.input = blessed.textbox({
+      screen: this.screen,
+      content: '',
+      border: 'line',
+      padding: {
+        top: 1,
+        right: 2,
+        bottom: 1,
+        left: 2
+      },
+      style: {
+        fg: 'default',
+        bg: 'default',
+        border: {
+          fg: 'white',
+          bg: 'default'
+        }
+      },
+      left: '25%-1',
+      height: 5,
+      top: '100%-5',
+      keys: true,
+      mouse: true,
+      inputOnFocus: true
+    });
 
-        /**
-         * Enable scrolling through the conversation with the arrow keys.
-         * @see this.input.key('up', history);
-         * @see this.input.key('down', history);
-         */
-        const history = (char, key) => {
+    /**
+     * Enable scrolling through the conversation with the arrow keys.
+     * @see this.input.key('up', scroll);
+     * @see this.input.key('down', scroll);
+     */
+    const scroll = (char, key) => {
+      const condition = () => {
+        if (key.name === 'up') {
+          return this.scrollIndex < this.scroll.length;
+        }
 
-            const condition = () => key.name === 'up' ?
-            this.whir.historyIndex < this.whir.history.length :
-            this.whir.historyIndex > 1;
+        return this.scrollIndex > 1;
+      };
 
-            if (this.whir.history.length) {
-                let found = false;
-                while (!found) {
-                    if (condition()) {
-                        this.whir.historyIndex += key.name === 'up' ? 1 : -1;
-                        let data = this.whir.history[this.whir.history.length - this.whir.historyIndex];
-                        if (data.user === this.whir.user) {
-                            found = true;
-                            this.input.setValue(data.message);
-                            this.render();
-                        }
-                        continue;
-                    }
-                    found = true;
-                }
-            }
-        };
+      if (this.scroll.length) {
+        let found = false;
+        while (!found) {
+          if (condition()) {
+            found = true;
+            this.scrollIndex += key.name === 'up' ? 1 : -1;
+            const data = this.scroll[this.scroll.length - this.scrollIndex];
+            this.input.setValue(data.message);
+            return this.render();
+          }
+          found = true;
+        }
+      }
 
-        this.input.key('up', history);
-        this.input.key('down', history);
+      return true;
+    };
 
-        this.input.on('submit', value => {
-            value = value.trim();
-            if (!value) {
-                return this.render();
-            }
+    this.input.key(['up', 'down'], scroll);
+    this.input.key(['C-c'], () => {
+      this.input.clearValue();
+      return this.render();
+    });
 
-            this.input.clearValue();
-            this.whir.send(value.trim());
-        });
+    this.input.on('submit', (value) => {
+      value = value.trim();
+      if (!value) {
+        return this.render();
+      }
 
-        return this.input;
-    }
+      this.input.clearValue();
+      return this.emit('message', value.trim());
+    });
+
+    return this.input;
+  }
 }
 
 module.exports = Components;

@@ -1,6 +1,7 @@
 'use strict';
 
 
+
 const blessed = require('blessed');
 const chalk = require('chalk');
 const string = _require('library/string');

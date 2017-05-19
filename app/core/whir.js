@@ -1,14 +1,13 @@
 'use strict';
 
 
-const co = require('co');
 const fs = require('fs');
 const WS = require('ws');
 const path = require('path');
 const crypto = _require('library/crypto');
-const EventEmitter = require('events').EventEmitter;
+const Emitter = require('events');
 
-class Whir extends EventEmitter {
+class Whir extends Emitter {
 
     constructor (argv = {}) {
 
@@ -61,24 +60,21 @@ class Whir extends EventEmitter {
         this.emit('sent', data);
     }
 
-    getHeaders (argv) {
+    async getHeaders (argv) {
 
-        return co(function* () {
+        const headers = {
+            'x-whir-session': crypto.hash(await crypto.bytes(128), 'RSA-SHA256')
+        };
 
-            const headers = {
-                'x-whir-session': crypto.hash(yield crypto.bytes(128), 'RSA-SHA256')
-            };
+        if (argv.channel) {
+            headers['x-whir-channel'] = argv.channel;
+        }
 
-            if (argv.channel) {
-                headers['x-whir-channel'] = argv.channel;
-            }
+        if (argv.user) {
+            headers['x-whir-user'] = argv.user;
+        }
 
-            if (argv.user) {
-                headers['x-whir-user'] = argv.user;
-            }
-
-            return { headers: headers };
-        }).then(headers => Promise.resolve(headers), error => Promise.reject(error));
+        return { headers: headers };
     }
 
     appendHistory (data) {

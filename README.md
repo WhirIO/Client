@@ -54,7 +54,7 @@ Here's how to do that: [https://github.com/WhirIO/Server](https://github.com/Whi
 
 ### Contribute
 ```
-fork https://github.com/WhirIO/Server
+fork https://github.com/WhirIO/Client
 ```
 
 

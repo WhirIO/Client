@@ -2,7 +2,7 @@
 [![Alpha](https://img.shields.io/badge/status-alpha-8456AC.svg)](https://github.com/WhirIO/Client)
 
 <p align="center">
-  <a href="http://whir.io"><img src="media/whir.png" alt="whir.io" width="420" /></a>
+  <a href="http://whir.io"><img src="https://raw.githubusercontent.com/WhirIO/Client/master/media/whir.png" alt="whir.io" width="420" /></a>
 </p>
 
 

@@ -1,6 +1,6 @@
 {
   "name": "whir.io",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "The whir.io chat client. [alpha]",
   "author": {
     "name": "Stefan Aichholzer",
@@ -55,7 +55,7 @@
   "bugs": {
     "url": "https://github.com/WhirIO/Client/issues"
   },
-  "_from": "whir.io@^1.2.0",
+  "_from": "whir.io@^1.3.0",
   "_npmUser": {
     "name": "aichholzer",
     "email": "theaichholzer@gmail.com"

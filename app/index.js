@@ -1,36 +1,33 @@
 #!/usr/bin/env node
-'use strict';
 
+const path = require('path');
+const Whir = require('./core/whir');
+const yargs = require('yargs');
 
-global._require = module => require(`${__dirname}/${module}`);
-const Whir = _require('core/whir');
-const Screen = _require('core/screen');
-const argv = require('yargs')
-    .options({
-        user: { alias: 'u', describe: 'Username.', demand: true },
-        channel: { alias: 'c', describe: 'Channel.', default: null },
-        host: { alias: 'h', describe: 'Whir.io server.', default: 'chat.whir.io' },
-        mute: { alias: 'm', describe: 'Mute the conversation.' }
-    })
-    .usage('\nUsage: whir.io --user=[user]')
-    .example('whir.io --user=stefan')
-    .example('whir.io --user=stefan --channel=box')
-    .epilogue('For more information, visit https://whir.io')
-    .argv;
+const expect = {
+  user: { alias: 'u', describe: 'Username.', demand: true },
+  pass: { alias: 'p', describe: 'Password.', default: null },
+  channel: { alias: 'c', describe: 'Channel.', default: null },
+  host: { alias: 'h', describe: 'Whir.io server.', default: 'chat.whir.io' },
+  mute: { alias: 'm', describe: 'Mute the conversation.' },
+  store: { alias: 's', describe: 'Where to store application data.', default: path.normalize(`${__dirname}/../store`) },
+  scrollSize: { alias: 'ss', describe: 'Lines to keep in scroll history.', default: 100 }
+};
+const argv = yargs.options(expect)
+  .usage('\nUsage: whir.io --user=[user]')
+  .example('whir.io --user=stefan')
+  .example('whir.io -u stefan -c friends')
+  .epilogue('For more information, visit https://whir.io')
+  .argv;
+const whir = new Whir(argv, process.env.UNSECURE_SOCKET === 'true');
 
-try {
-    const whir = new Whir(argv);
-    const screen = new Screen(whir);
-
-    whir.on('sent', data => screen.echo(data, 'me'))
-        .on('received', data => screen.echo(data))
-        .on('close', data => screen.error(data))
-        .on('error', data => screen.error(data))
-        .on('history', () => screen.loadHistory());
-
-} catch (error) {
-    console.error('\n' + error.message);
-    console.error(error.stack + '\n');
-
-    process.exit(1);
-}
+/**
+ * Emitting events makes the architecture more plug-able.
+ * It's easy to implement custom logic -or extended the existing one-
+ * for each emitted event.
+ */
+whir.on('sent', data => whir.screen.print(data, { sender: 'me' }))
+  .on('received', data => whir.screen.print(data))
+  .on('alert', data => whir.error(data))
+  .on('close', data => whir.error(data))
+  .on('error', data => whir.error(data));

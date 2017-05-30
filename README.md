@@ -1,28 +1,26 @@
+[![Dependency status](https://gemnasium.com/badges/github.com/WhirIO/Client.svg)](https://gemnasium.com/github.com/WhirIO/Client)
+[![Alpha](https://img.shields.io/badge/status-alpha-8456AC.svg)](https://github.com/WhirIO/Client)
+
 <p align="center">
-	<a href="http://whir.io"><img src="media/whir.png" alt="whir.io" /></a>
+  <a href="http://whir.io"><img src="media/whir.png" alt="whir.io" width="420" /></a>
 </p>
 
-<p>
-    <a href="https://asciinema.org/a/4ff69bzz484gopw5hno3ietmm" target="_blank"><img src="https://asciinema.org/a/4ff69bzz484gopw5hno3ietmm.png" /></a>
-</p>
 
+### Installation
 ```
-This is still under development.
-It might be unstable until this notice is removed.
+$> npm i -g whir.io
 ```
 
-### Getting started:
-```
-$> npm install -g whir.io
-```
 
 ### Options:
-- `--user || -u`: Your username for a particular channel. `Required`
-- `--channel || -c`: The channel to join. Default: `whir generated name`
-- `--host || -h`: The server running Whir. Default: `chat.whir.io`
-- `--mute || -m`: Mute the conversation. Does not require a value.
+- `--user || -u`: Your username (per channel) `Required`
+- `--pass || -p`: Password, for private channels.
+- `--channel || -c`: Channel you are joining (or creating) `Default: random name`
+- `--host || -h`: Whir's host `Default: chat.whir.io`
+- `--mute || -m`: Mute the conversation.
 
-### Example uses:
+
+### Chat:
 ```
 $> whir.io --user=stefan --channel=friends
 ```
@@ -30,20 +28,36 @@ $> whir.io --user=stefan --channel=friends
 or
 
 ```
-$> whir.io -u=stefan -c=friends
+$> whir.io -u stefan -c friends
 ```
 
 or
 
 ```
-$> whir.io -u=stefan -m
-// You will be connected to a randomly named channel.
+$> whir.io -u stefan -m
+// Connected to a random channel.
 // The conversation is muted.
+```
+
+or
+
+```
+$> whir.io -u stefan -c friends -h myawesomedomain.chat
+// Running whir on your own server/domain.
+```
+
+
+### Notes
+You can also setup and run your own **whir** server.<br />
+Here's how to do that: [https://github.com/WhirIO/Server](https://github.com/WhirIO/Server)
+
+
+### Contribute
+```
+fork https://github.com/WhirIO/Server
 ```
 
 
 ### License
 
 [MIT](https://github.com/WhirIO/Client/blob/master/LICENSE)
-
-### Enjoy!

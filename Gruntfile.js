@@ -1,51 +1,12 @@
-'use strict';
-
-
 require('dotenv').load();
-module.exports = grunt => {
 
-    grunt.initConfig({
-        jshint: {
-            options: {
-                jshintrc: true
-            },
-            whir: [
-                '.'
-            ]
-        },
-        jscs: {
-            src: '.',
-            options: {
-                config: '.jscs',
-                fix: true
-            }
-        },
-        nodemon: {
-            dev: {
-                script: 'app/index.js',
-                options: {
-                    args: ['--trace', '--trace-sync-io'],
-                    callback: nodemon => {
-                        nodemon.on('log', event => {
-                            console.log(event.colour);
-                        });
-                    },
-                    env: {
-                        NODE_ENV: grunt.option('env') || 'local',
-                        PORT: process.env.PORT
-                    },
-                    cwd: __dirname,
-                    ignore: ['node_modules/**'],
-                    ext: 'js',
-                    delay: 500
-                }
-            }
-        }
-    });
+module.exports = (grunt) => {
+  grunt.initConfig({
+    eslint: {
+      target: ['./app/**/*.js']
+    }
+  });
 
-    grunt.loadNpmTasks('grunt-jscs');
-    grunt.loadNpmTasks('grunt-nodemon');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
-
-    grunt.registerTask('hint', 'Hinting...', ['jshint:whir', 'jscs']);
+  grunt.loadNpmTasks('grunt-eslint');
+  grunt.registerTask('default', ['eslint']);
 };

@@ -60,8 +60,18 @@ class Whir extends Emitter {
       return this.emit('error', error);
     }
 
+    setInterval(() => {
+      if (!this.socket.whirAlive) {
+        return this.socket.terminate();
+      }
+
+      this.socket.whirAlive = false;
+      return this.socket.ping('', true, true);
+    }, 40000);
+
     return this.socket
       .on('open', async () => {
+        this.socket.whirAlive = true;
         this.screen = new Screen(this, { user: this.user, scrollSize: this.scrollSize });
         this.screen.muteChannel = true;
 
@@ -81,7 +91,10 @@ class Whir extends Emitter {
         }
       })
       .on('error', error => this.emit('error', error))
-      .on('close', (code, data) => this.emit('close', data));
+      .on('close', (code, data) => this.emit('close', data))
+      .on('pong', function pong() {
+        this.whirAlive = true;
+      });
   }
 
   send(message) {

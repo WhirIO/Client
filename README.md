@@ -15,6 +15,8 @@
 As a developer, I use my command line a lot so why not integrate chat directly into it?<br /> 
 **whir** aims to close this gap by providing a simple, flexible, extend-able and blazing fast chat environment, without having to install additional applications.
 
+**whir** does not store messages in any form.
+
 ### Installation
 **whir** is written in JavaScript and you should have installed the latest version of Nodejs.
 ```
@@ -22,7 +24,7 @@ $> npm i -g whir.io
 ```
 
 
-### Options:
+### Options
 - `--user` || `-u`: Your username (per channel) `Required`
 - `--channel` || `-c`: Channel you are joining (or creating) `Default: [random]`
 - `--host` || `-h`: Whir's host `Default: chat.whir.io`
@@ -30,7 +32,7 @@ $> npm i -g whir.io
 - `--mute` || `-m`: Mute this conversation
 
 
-### Chat:
+### Chat
 ```
 $> whir.io --user=stefan --channel=friends
 ```
@@ -54,6 +56,11 @@ or
 // Running whir on your own server/domain.
 $> whir.io -u stefan -c friends -h myawesomedomain.chat
 ```
+
+
+### Help
+Once connected, type `/help` for a list of basic commands.<br />
+Type `/exit` to leave at any time.
 
 
 ### Notes

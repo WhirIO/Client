@@ -5,7 +5,7 @@ const string = require('../library/string');
 
 class Screen {
 
-  constructor(whir, { user = null, scrollSize = 250 }) {
+  constructor(whir, { user = null, scrollSize = 250, mute = false }) {
     this.whir = whir;
 
     this.components = new Components({
@@ -17,6 +17,7 @@ class Screen {
 
     this.user = user;
     this.scrollSize = scrollSize;
+    this.muteChannel = mute;
 
     this.components.on('message', message => this.whir.send(message));
     this.components.screen.key(['escape'], this.destroy.bind(this, true));
@@ -162,7 +163,8 @@ class Screen {
     const channel = `Channel: ${data.channel}`;
     const user = `User: ${this.whir.user}`;
     const users = `${this.components.users.children.length + 1}`;
-    this.components.title.setText(`${this.muteChannel ? '\uD83D\uDD07' : '\uD83D\uDD09'}  ${channel} | ${user} | Users: ${users}`);
+    const title = `${this.muteChannel ? '\uD83D\uDD07' : '\uD83D\uDD09'}  ${channel} | ${user} | Users: ${users}`;
+    this.components.title.setText(title);
 
     if (render) {
       this.components.render();
@@ -174,7 +176,7 @@ class Screen {
   destroy(exit = false) {
     this.components.screen.destroy();
     if (exit) {
-      console.error(`\n 👋  See you soon, ${this.user}!\n`);
+      console.log(` 👋  See you soon, ${this.user}!`);
       process.exit(0);
     }
   }

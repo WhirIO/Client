@@ -1,6 +1,6 @@
 {
   "name": "whir.io",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "The whir.io chat client. [alpha]",
   "author": {
     "name": "Stefan Aichholzer",
@@ -24,14 +24,15 @@
   },
   "license": "MIT",
   "engines": {
-    "node": ">=7.10"
+    "node": ">=8"
   },
   "dependencies": {
     "blessed": "^0.1.81",
-    "bufferutil": "^3.0.0",
+    "bufferutil": "^3.0.1",
     "chalk": "^1.1.3",
+    "cli-spinner": "^0.2.6",
     "moment": "^2.17.1",
-    "utf-8-validate": "^3.0.1",
+    "utf-8-validate": "^3.0.2",
     "ws": "^3.0.0",
     "yargs": "^8.0.1"
   },
@@ -55,7 +56,7 @@
   "bugs": {
     "url": "https://github.com/WhirIO/Client/issues"
   },
-  "_from": "whir.io@^1.3.1",
+  "_from": "whir.io@^1.3.2",
   "_npmUser": {
     "name": "aichholzer",
     "email": "theaichholzer@gmail.com"

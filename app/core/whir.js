@@ -3,6 +3,7 @@ const Emitter = require('events').EventEmitter;
 const fs = require('fs');
 const lineReader = require('readline');
 const Screen = require('./screen');
+const Spinner = require('cli-spinner').Spinner;
 const WS = require('ws');
 
 const getHeaders = async ({ user, channel, pass, store }) => {
@@ -48,6 +49,10 @@ class Whir extends Emitter {
         throw headers.error;
       }
 
+      console.log();
+      this.spinner = new Spinner(' %s Connecting...');
+      this.spinner.setSpinnerString(18);
+      this.spinner.start();
       return this.connect(headers);
     })
     .catch(error => this.emit('error', error));
@@ -72,14 +77,19 @@ class Whir extends Emitter {
     return this.socket
       .on('open', async () => {
         this.socket.whirAlive = true;
-        this.screen = new Screen(this, { user: this.user, scrollSize: this.scrollSize });
-        this.screen.muteChannel = true;
-
-        this.screen.components.render(await this.loadHistory());
-        this.screen.muteChannel = this.muteChannel;
       })
       .on('message', async (data) => {
         try {
+          if (!this.isLoaded) {
+            this.spinner.stop(true);
+            this.screen = new Screen(this, { user: this.user, scrollSize: this.scrollSize, mute: this.muteChannel });
+            this.screen.muteChannel = true;
+
+            await this.loadHistory();
+            this.screen.muteChannel = this.muteChannel;
+            this.isLoaded = true;
+          }
+
           data = JSON.parse(data.toString('utf8'));
           this.channel = data.channel || this.channel;
           data.timestamp = (new Date()).getTime();
@@ -90,8 +100,14 @@ class Whir extends Emitter {
           return this.emit('alert', error);
         }
       })
-      .on('error', error => this.emit('error', error))
-      .on('close', (code, data) => this.emit('close', data))
+      .on('error', (error) => {
+        this.spinner.stop(true);
+        this.emit('error', error);
+      })
+      .on('close', (code, data) => {
+        this.spinner.stop(true);
+        this.emit('close', data);
+      })
       .on('pong', function pong() {
         this.whirAlive = true;
       });
@@ -189,18 +205,18 @@ class Whir extends Emitter {
     }
 
     if (data.code === 'ECONNREFUSED') {
-      data.message = ` 😖  It was not possible to connect to the server.\n (${data.message})
+      data.message = ` It was not possible to connect to the server.\n (${data.message})
       \n Make sure your whir.io server is listening.`;
     } else {
-      data.message = ` 😞  ${data.message || 'The server terminated your connection.'}`;
+      data.message = ` ${data.message || 'The server terminated your connection.'}`;
     }
 
     if (this.screen) {
       this.screen.destroy();
     }
 
-    console.error(`\n${data.message}\n`);
-    process.exit(1);
+    console.error(`${data.message}`);
+    process.exit(0);
   }
 }
 

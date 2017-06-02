@@ -11,7 +11,7 @@ const expect = {
   host: { alias: 'h', describe: 'Whir.io server.', default: 'chat.whir.io' },
   mute: { alias: 'm', describe: 'Mute the conversation.' },
   store: { alias: 's', describe: 'Where to store application data.', default: path.normalize(`${__dirname}/../store`) },
-  scrollSize: { alias: 'ss', describe: 'Lines to keep in scroll history.', default: 100 }
+  scroll: { alias: 'sc', describe: 'Lines to keep in scroll history.', default: 100 }
 };
 const argv = yargs.options(expect)
   .usage('\nUsage: whir.io --user=[user]')

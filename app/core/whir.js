@@ -38,7 +38,7 @@ class Whir extends Emitter {
     this.host = argv.host;
     this.user = argv.user;
     this.channel = argv.channel;
-    this.scrollSize = argv.scrollSize;
+    this.scrollSize = argv.scroll;
     this.store = argv.store;
     this.muteChannel = argv.mute || false;
 
@@ -82,7 +82,7 @@ class Whir extends Emitter {
         try {
           if (!this.isLoaded) {
             this.spinner.stop(true);
-            this.screen = new Screen(this, { user: this.user, scrollSize: this.scrollSize, mute: this.muteChannel });
+            this.screen = new Screen(this, { user: this.user, scrollSize: this.scroll, mute: this.muteChannel });
             this.screen.muteChannel = true;
 
             await this.loadHistory();

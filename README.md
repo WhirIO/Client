@@ -8,7 +8,9 @@
 <p>&nbsp;</p>
 
 [![Alpha](https://img.shields.io/badge/Status-ALPHA-8456AC.svg)](https://github.com/WhirIO/Client)
-[![ES7](https://img.shields.io/badge/Uses-ES7-00008B.svg)](https://github.com/WhirIO/Client)
+[![ES7](https://img.shields.io/badge/JavaScript-ES7-00008B.svg)](https://github.com/WhirIO/Client)
+[![codebeat badge](https://codebeat.co/badges/f82e9789-770f-4a7a-a8e5-c9e061f71f77)](https://codebeat.co/projects/github-com-whirio-client-master)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a360fc01aeab4d7084254dc6c09de3d9)](https://www.codacy.com/app/aichholzer/Client?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=WhirIO/Client&amp;utm_campaign=Badge_Grade)
 [![Downloads](https://img.shields.io/npm/dt/whir.io.svg)](https://www.npmjs.com/package/whir.io)
 [![Dependency status](https://gemnasium.com/badges/github.com/WhirIO/Client.svg)](https://gemnasium.com/github.com/WhirIO/Client)
 

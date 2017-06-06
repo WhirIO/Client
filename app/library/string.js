@@ -4,12 +4,12 @@ module.exports = {
 
   emojinize: input => input.replace(/:([\w]+):/g, (match, icon) => emoji[icon] || match),
 
-  pad: (string, side = 'right', padding = null, char = ' ') => {
-    if (!string || !padding || string.length >= padding) {
-      return string;
+  pad: ({ key, side = 'right', padding = null, char = ' ' }) => {
+    if (!key || !padding || key.length >= padding) {
+      return key;
     }
 
-    const pad = char.repeat(padding - string.length);
-    return side === 'right' ? string + pad : pad + string;
+    const pad = char.repeat(padding - key.length);
+    return side === 'right' ? key + pad : pad + key;
   }
 };

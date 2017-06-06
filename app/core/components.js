@@ -1,6 +1,47 @@
 const blessed = require('blessed');
 const Emitter = require('events').EventEmitter;
 
+/**
+ * Enable scrolling through the conversation with the arrow keys.
+ * @see screen.input.key('up', scroll);
+ * @see screen.input.key('down', scroll);
+ */
+const inputHandler = (screen) => {
+  const scroll = (char, key) => {
+    const condition = () => (key.name === 'up' ? screen.scrollIndex < screen.scroll.length : screen.scrollIndex > 1);
+    if (screen.scroll.length) {
+      let found = false;
+      while (!found) {
+        if (condition()) {
+          found = true;
+          screen.scrollIndex += key.name === 'up' ? 1 : -1;
+          const data = screen.scroll[screen.scroll.length - screen.scrollIndex];
+          screen.input.setValue(data.message);
+          return screen.render();
+        }
+        found = true;
+      }
+    }
+    return true;
+  };
+
+  screen.input.key(['up', 'down'], scroll);
+  screen.input.key(['C-c'], () => {
+    screen.input.clearValue();
+    return screen.render();
+  });
+
+  screen.input.on('submit', (value) => {
+    value = value.trim();
+    if (!value) {
+      return screen.render();
+    }
+
+    screen.input.clearValue();
+    return screen.emit('message', value.trim());
+  });
+};
+
 class Components extends Emitter {
 
   constructor(options) {
@@ -128,53 +169,7 @@ class Components extends Emitter {
       inputOnFocus: true
     });
 
-    /**
-     * Enable scrolling through the conversation with the arrow keys.
-     * @see this.input.key('up', scroll);
-     * @see this.input.key('down', scroll);
-     */
-    const scroll = (char, key) => {
-      const condition = () => {
-        if (key.name === 'up') {
-          return this.scrollIndex < this.scroll.length;
-        }
-
-        return this.scrollIndex > 1;
-      };
-
-      if (this.scroll.length) {
-        let found = false;
-        while (!found) {
-          if (condition()) {
-            found = true;
-            this.scrollIndex += key.name === 'up' ? 1 : -1;
-            const data = this.scroll[this.scroll.length - this.scrollIndex];
-            this.input.setValue(data.message);
-            return this.render();
-          }
-          found = true;
-        }
-      }
-
-      return true;
-    };
-
-    this.input.key(['up', 'down'], scroll);
-    this.input.key(['C-c'], () => {
-      this.input.clearValue();
-      return this.render();
-    });
-
-    this.input.on('submit', (value) => {
-      value = value.trim();
-      if (!value) {
-        return this.render();
-      }
-
-      this.input.clearValue();
-      return this.emit('message', value.trim());
-    });
-
+    inputHandler(this);
     return this.input;
   }
 }

@@ -148,7 +148,7 @@ class Screen {
             passedItem = item.value;
         }
 
-        const line = `\u258B ${string.pad(key, 'right', padding)}${chalk.white(passedItem)}`;
+        const line = `\u258B ${string.pad({ key, side: 'right', padding })}${chalk.white(passedItem)}`;
         this.components.timeline.pushLine(line);
       });
     }

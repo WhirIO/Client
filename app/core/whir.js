@@ -78,28 +78,7 @@ class Whir extends Emitter {
       .on('open', async () => {
         this.socket.whirAlive = true;
       })
-      .on('message', async (data) => {
-        try {
-          if (!this.isLoaded) {
-            this.spinner.stop(true);
-            this.screen = new Screen(this, { user: this.user, scrollSize: this.scroll, mute: this.muteChannel });
-            this.screen.muteChannel = true;
-
-            await this.loadHistory();
-            this.screen.muteChannel = this.muteChannel;
-            this.isLoaded = true;
-          }
-
-          data = JSON.parse(data.toString('utf8'));
-          this.channel = data.channel || this.channel;
-          data.timestamp = (new Date()).getTime();
-
-          await this.writeHistory(data);
-          return this.emit('received', data);
-        } catch (error) {
-          return this.emit('alert', error);
-        }
-      })
+      .on('message', this.messageHandler.bind(this))
       .on('error', (error) => {
         this.spinner.stop(true);
         this.emit('error', error);
@@ -111,6 +90,29 @@ class Whir extends Emitter {
       .on('pong', function pong() {
         this.whirAlive = true;
       });
+  }
+
+  async messageHandler(data) {
+    try {
+      if (!this.isLoaded) {
+        this.spinner.stop(true);
+        this.screen = new Screen(this, { user: this.user, scrollSize: this.scroll, mute: this.muteChannel });
+        this.screen.muteChannel = true;
+
+        await this.loadHistory();
+        this.screen.muteChannel = this.muteChannel;
+        this.isLoaded = true;
+      }
+
+      data = JSON.parse(data.toString('utf8'));
+      this.channel = data.channel || this.channel;
+      data.timestamp = (new Date()).getTime();
+
+      await this.writeHistory(data);
+      return this.emit('received', data);
+    } catch (error) {
+      return this.emit('error', error);
+    }
   }
 
   send(message) {
@@ -126,18 +128,15 @@ class Whir extends Emitter {
       data.command = data.message.replace(/^\//g, '');
       switch (data.command) {
         case 'exit': return this.screen.destroy(true);
-        case 'clear':
-          localCommand = true;
+        case 'clear': localCommand = true;
           this.screen.components.timeline.getLines().forEach((lines, index) => {
             this.screen.components.timeline.deleteLine(index);
           });
           break;
-        case 'mute':
-          localCommand = true;
+        case 'mute': localCommand = true;
           this.screen.muteChannel = true;
           break;
-        case 'unmute':
-          localCommand = true;
+        case 'unmute': localCommand = true;
           this.screen.muteChannel = false;
           break;
         default:
@@ -150,7 +149,6 @@ class Whir extends Emitter {
 
     this.writeHistory(data);
     this.screen.scroll(data);
-
     return this.emit('sent', data);
   }
 
@@ -173,12 +171,10 @@ class Whir extends Emitter {
 
   loadHistory() {
     const history = `${this.store}/${this.user}.${this.channel}.whir`;
-    return new Promise((yes, no) => lineReader.createInterface({
-      input: fs.createReadStream(history)
-        .on('error', yes.bind(null, 'no_history'))
-        .on('end', yes)
-    })
-    .on('line', (line) => {
+    const fileStream = yes => fs.createReadStream(history)
+      .on('error', yes.bind(null, 'no_history'))
+      .on('end', yes);
+    const readLine = (no, line) => {
       try {
         const data = JSON.parse(line);
         data.fromHistory = true;
@@ -190,7 +186,12 @@ class Whir extends Emitter {
       } catch (error) {
         return no(error);
       }
-    }));
+    };
+
+    return new Promise((yes, no) => {
+      lineReader.createInterface({ input: fileStream(yes) })
+        .on('line', readLine.bind(null, no));
+    });
   }
 
   error(data) {

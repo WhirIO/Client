@@ -8,7 +8,8 @@ const Emitter = require('events').EventEmitter;
  */
 const inputHandler = (screen) => {
   const scroll = (char, key) => {
-    const condition = () => (key.name === 'up' ? screen.scrollIndex < screen.scroll.length : screen.scrollIndex > 1);
+    const condition = () =>
+      key.name === 'up' ? screen.scrollIndex < screen.scroll.length : screen.scrollIndex > 1;
     if (screen.scroll.length) {
       let found = false;
       while (!found) {
@@ -32,18 +33,17 @@ const inputHandler = (screen) => {
   });
 
   screen.input.on('submit', (value) => {
-    value = value.trim();
-    if (!value) {
+    const submitValue = value.trim();
+    if (!submitValue) {
       return screen.render();
     }
 
     screen.input.clearValue();
-    return screen.emit('message', value.trim());
+    return screen.emit('message', submitValue);
   });
 };
 
 class Components extends Emitter {
-
   constructor(options) {
     super();
 

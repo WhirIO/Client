@@ -1,13 +1,15 @@
+/* eslint no-console: 0 */
+
 const crypto = require('../library/crypto');
-const Emitter = require('events').EventEmitter;
 const fs = require('fs');
 const lineReader = require('readline');
 const Screen = require('./screen');
-const Spinner = require('cli-spinner').Spinner;
 const WS = require('ws');
+const { EventEmitter } = require('events');
+const { Spinner } = require('cli-spinner');
 
 const getHeaders = async ({ user, channel, pass, store }) => {
-  const headers = data => ({
+  const headers = (data) => ({
     headers: {
       'x-whir-session': data.session,
       'x-whir-channel': channel || '',
@@ -30,8 +32,7 @@ const getHeaders = async ({ user, channel, pass, store }) => {
   }
 };
 
-class Whir extends Emitter {
-
+class Whir extends EventEmitter {
   constructor(argv = {}, unsecure = false) {
     super();
 
@@ -44,18 +45,18 @@ class Whir extends Emitter {
 
     this.protocol = `ws${unsecure ? '' : 's'}`;
     getHeaders(argv)
-    .then((headers) => {
-      if (headers.error) {
-        throw headers.error;
-      }
+      .then((headers) => {
+        if (headers.error) {
+          throw headers.error;
+        }
 
-      console.log();
-      this.spinner = new Spinner(' %s Connecting...');
-      this.spinner.setSpinnerString(18);
-      this.spinner.start();
-      return this.connect(headers);
-    })
-    .catch(error => this.emit('error', error));
+        console.log();
+        this.spinner = new Spinner(' %s Connecting...');
+        this.spinner.setSpinnerString(18);
+        this.spinner.start();
+        return this.connect(headers);
+      })
+      .catch((error) => this.emit('error', error));
   }
 
   connect(headers) {
@@ -96,7 +97,11 @@ class Whir extends Emitter {
     try {
       if (!this.isLoaded) {
         this.spinner.stop(true);
-        this.screen = new Screen(this, { user: this.user, scrollSize: this.scroll, mute: this.muteChannel });
+        this.screen = new Screen(this, {
+          user: this.user,
+          scrollSize: this.scroll,
+          mute: this.muteChannel
+        });
         this.screen.muteChannel = true;
 
         await this.loadHistory();
@@ -104,12 +109,12 @@ class Whir extends Emitter {
         this.isLoaded = true;
       }
 
-      data = JSON.parse(data.toString('utf8'));
-      this.channel = data.channel || this.channel;
-      data.timestamp = (new Date()).getTime();
+      const parsedData = JSON.parse(data.toString('utf8'));
+      this.channel = parsedData.channel || this.channel;
+      parsedData.timestamp = new Date().getTime();
 
-      await this.writeHistory(data);
-      return this.emit('received', data);
+      await this.writeHistory(parsedData);
+      return this.emit('received', parsedData);
     } catch (error) {
       return this.emit('error', error);
     }
@@ -120,23 +125,27 @@ class Whir extends Emitter {
       user: this.user,
       channel: this.channel,
       message,
-      timestamp: (new Date()).getTime()
+      timestamp: new Date().getTime()
     };
 
     let localCommand = false;
     if (data.message.match(/^\/[\w]+/)) {
       data.command = data.message.replace(/^\//g, '');
       switch (data.command) {
-        case 'exit': return this.screen.destroy(true);
-        case 'clear': localCommand = true;
+        case 'exit':
+          return this.screen.destroy(true);
+        case 'clear':
+          localCommand = true;
           this.screen.components.timeline.getLines().forEach((lines, index) => {
             this.screen.components.timeline.deleteLine(index);
           });
           break;
-        case 'mute': localCommand = true;
+        case 'mute':
+          localCommand = true;
           this.screen.muteChannel = true;
           break;
-        case 'unmute': localCommand = true;
+        case 'unmute':
+          localCommand = true;
           this.screen.muteChannel = false;
           break;
         default:
@@ -171,9 +180,11 @@ class Whir extends Emitter {
 
   loadHistory() {
     const history = `${this.store}/${this.user}.${this.channel}.whir`;
-    const fileStream = yes => fs.createReadStream(history)
-      .on('error', yes.bind(null, 'no_history'))
-      .on('end', yes);
+    const fileStream = (yes) =>
+      fs
+        .createReadStream(history)
+        .on('error', yes.bind(null, 'no_history'))
+        .on('end', yes);
     const readLine = (no, line) => {
       try {
         const data = JSON.parse(line);
@@ -189,34 +200,32 @@ class Whir extends Emitter {
     };
 
     return new Promise((yes, no) => {
-      lineReader.createInterface({ input: fileStream(yes) })
-        .on('line', readLine.bind(null, no));
+      lineReader.createInterface({ input: fileStream(yes) }).on('line', readLine.bind(null, no));
     });
   }
 
   error(data) {
+    let errorData = {};
     try {
-      if (!data) {
-        data = {};
-      } else {
-        data = JSON.parse(data);
+      if (data) {
+        errorData = JSON.parse(data);
       }
     } catch (error) {
       // data is not JSON or is empty
     }
 
-    if (data.code === 'ECONNREFUSED') {
-      data.message = ` It was not possible to connect to the server.\n (${data.message})
+    if (errorData.code === 'ECONNREFUSED') {
+      errorData.message = ` It was not possible to connect to the server.\n (${errorData.message})
       \n Make sure your whir.io server is listening.`;
     } else {
-      data.message = ` ${data.message || 'The server terminated your connection.'}`;
+      errorData.message = ` ${errorData.message || 'The server terminated your connection.'}`;
     }
 
     if (this.screen) {
       this.screen.destroy();
     }
 
-    console.error(`${data.message}`);
+    console.error(`${errorData.message}`);
     process.exit(0);
   }
 }

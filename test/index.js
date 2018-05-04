@@ -1,4 +1,1 @@
-'use strict';
-
-
 require('should');

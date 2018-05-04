@@ -1,10 +1,11 @@
+/* eslint no-console: 0 */
+
 const chalk = require('chalk');
 const Components = require('./components');
 const moment = require('moment');
 const string = require('../library/string');
 
 class Screen {
-
   constructor(whir, { user = null, scrollSize = 250, mute = false }) {
     this.whir = whir;
 
@@ -19,7 +20,7 @@ class Screen {
     this.scrollSize = scrollSize;
     this.muteChannel = mute;
 
-    this.components.on('message', message => this.whir.send(message));
+    this.components.on('message', (message) => this.whir.send(message));
     this.components.screen.key(['escape'], this.destroy.bind(this, true));
     this.components.screen.append(this.components.title());
     this.components.screen.append(this.components.users());
@@ -108,10 +109,7 @@ class Screen {
       const user = data.user ? chalk.green(`${data.timestamp}${data.user}: `) : '';
       if (data.alert) {
         data.message = data.message.split('\n');
-        data.message = data.message.map((message) => {
-          message = chalk.white.bgRed(message);
-          return message;
-        });
+        data.message = data.message.map((message) => chalk.white.bgRed(message));
         data.message = data.message.join('\n');
       }
       this.components.timeline.pushLine(user + data.message);
@@ -148,7 +146,9 @@ class Screen {
             passedItem = item.value;
         }
 
-        const line = `\u258B ${string.pad({ key, side: 'right', padding })}${chalk.white(passedItem)}`;
+        const line = `\u258B ${string.pad({ key, side: 'right', padding })}${chalk.white(
+          passedItem
+        )}`;
         this.components.timeline.pushLine(line);
       });
     }
@@ -163,7 +163,9 @@ class Screen {
     const channel = `Channel: ${data.channel}`;
     const user = `User: ${this.whir.user}`;
     const users = `${this.components.users.children.length + 1}`;
-    const title = `${this.muteChannel ? '\uD83D\uDD07' : '\uD83D\uDD09'}  ${channel} | ${user} | Users: ${users}`;
+    const title = `${
+      this.muteChannel ? '\uD83D\uDD07' : '\uD83D\uDD09'
+    }  ${channel} | ${user} | Users: ${users}`;
     this.components.title.setText(title);
 
     if (render) {

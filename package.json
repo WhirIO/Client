@@ -28,11 +28,11 @@
   },
   "dependencies": {
     "blessed": "^0.1.81",
-    "bufferutil": "^3.0.4",
+    "bufferutil": "^4.0.0",
     "chalk": "^2.4.1",
     "cli-spinner": "^0.2.8",
     "moment": "^2.22.1",
-    "utf-8-validate": "^4.0.1",
+    "utf-8-validate": "^5.0.0",
     "ws": "^5.1.1",
     "yargs": "^11.0.0"
   },
